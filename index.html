@@ -3,6 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="referrer" content="no-referrer">
 <meta name="theme-color" content="#F0EEE6">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="น้ำพนัส">
@@ -280,7 +281,7 @@ async function load() {
   const items = [], fails = [];
   const names = ["คลองหลวง", "อ่าง", "ฝน", "บางปะกง", "ฝนพยากรณ์"];
   res.forEach((r, i) => { if (r.status === "fulfilled") { [].concat(r.value || []).forEach(v => v && v.lv != null && items.push(v)); } else fails.push(names[i]); });
-  const lv = items.length ? Math.max(...items.map(v => v.lv)) : null;
+  const lv = res.slice(0, 3).some(r => r.status === "fulfilled") ? Math.max(0, ...items.map(v => v.lv)) : null;
   const b = $("banner");
   if (lv == null) { b.className = "banner lvx"; b.querySelector(".lv").textContent = "ดึงข้อมูลไม่ได้"; }
   else {
@@ -288,7 +289,7 @@ async function load() {
     b.querySelector(".lv").textContent = ["🟢 ปกติ", "🟡 เฝ้าระวัง", "🔴 อันตราย"][lv];
   }
   const hot = items.filter(v => v.lv >= 1).map(v => v.txt).filter(Boolean);
-  $("bannerSub").innerHTML = (hot.length ? "ข้ามเกณฑ์: " + hot.join(" · ") : "ทุกจุดยังต่ำกว่าเกณฑ์") +
+  $("bannerSub").innerHTML = lv == null ? `<span class="err">ดึงข้อมูลน้ำไม่ได้: ${fails.join(", ")} · กดดึงใหม่ หรือรอ 10 นาที</span>` : (hot.length ? "ข้ามเกณฑ์: " + hot.join(" · ") : "ทุกจุดยังต่ำกว่าเกณฑ์") +
     (fails.length ? `<br><span class="err">ดึงไม่ได้: ${fails.join(", ")} (ลองกดดึงใหม่)</span>` : "");
   const n = new Date(); $("foot").textContent = `ดึงล่าสุด ${pad(n.getHours())}:${pad(n.getMinutes())} น. · หน้านี้ดึงใหม่เองทุก 10 นาที และทุกครั้งที่กลับมาเปิด`;
   btn.textContent = "↻ ดึงใหม่"; btn.disabled = false; busy = false;
