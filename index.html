@@ -1,0 +1,302 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#F0EEE6">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="น้ำพนัส">
+<title>น้ำพนัสสด</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+Thai:wght@500;600&family=Sarabun:wght@400;600&family=IBM+Plex+Mono:wght@500&display=swap">
+<style>
+/* หน้าเดียวแนวตั้งสำหรับมือถือ: แถบสถานะรวม → การ์ดคลองหลวง (กราฟ) → การ์ดย่อย 2 คอลัมน์ → ฝนพยากรณ์ */
+:root{
+  --bg:#F0EEE6; --surface:#FFFFFF; --surface-2:#FAF9F5;
+  --ink:#1F1E1D; --ink-soft:#6B6A63; --border:#E6E2D6;
+  --accent:#D97757; --accent-deep:#BD5D3A;
+  --red:#C44536; --yellow:#B08A12; --green:#5B7A5B; --gray:#9B998F;
+  --red-bg:#F6E1DD; --yellow-bg:#F4ECD2; --green-bg:#E3EBE2;
+  --water:#3E6E8E; --water-fill:rgba(62,110,142,.14);
+  --radius:12px; --shadow:0 1px 3px rgba(31,30,29,.06),0 10px 30px rgba(31,30,29,.05);
+  --f-head:'Noto Serif Thai',Georgia,serif; --f-body:'Sarabun',-apple-system,sans-serif; --f-num:'IBM Plex Mono',ui-monospace,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#1C1B19; --surface:#262522; --surface-2:#2D2B28; --ink:#EDEBE4; --ink-soft:#A8A59B; --border:#3A3833;
+  --accent:#E08A6B; --accent-deep:#E8A085; --red:#E46A5A; --yellow:#D9B648; --green:#8DB08D; --gray:#8A877E;
+  --red-bg:#3E2622; --yellow-bg:#3A321C; --green-bg:#243024; --water:#7FB0D0; --water-fill:rgba(127,176,208,.16);
+  --shadow:0 1px 3px rgba(0,0,0,.3); color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#1C1B19; --surface:#262522; --surface-2:#2D2B28; --ink:#EDEBE4; --ink-soft:#A8A59B; --border:#3A3833;
+  --accent:#E08A6B; --accent-deep:#E8A085; --red:#E46A5A; --yellow:#D9B648; --green:#8DB08D; --gray:#8A877E;
+  --red-bg:#3E2622; --yellow-bg:#3A321C; --green-bg:#243024; --water:#7FB0D0; --water-fill:rgba(127,176,208,.16);
+  --shadow:0 1px 3px rgba(0,0,0,.3); color-scheme:dark}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font:16px/1.6 var(--f-body);padding:env(safe-area-inset-top,0px) 16px calc(24px + env(safe-area-inset-bottom,0px))}
+main{max-width:720px;margin:0 auto;display:grid;gap:14px;padding-block:14px}
+h1,h2{font-family:var(--f-head);font-weight:600;margin:0;text-wrap:balance}
+h1{font-size:1.45rem;line-height:1.3}
+h2{font-size:1.05rem}
+.num{font-family:var(--f-num);font-variant-numeric:tabular-nums}
+.soft{color:var(--ink-soft)}
+.small{font-size:.82rem}
+header{display:flex;justify-content:space-between;align-items:flex-end;gap:12px;flex-wrap:wrap}
+button{font:600 .9rem var(--f-body);color:var(--ink);background:var(--surface);border:1px solid var(--border);border-radius:999px;padding:8px 16px;cursor:pointer}
+button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.card{background:var(--surface);border-radius:var(--radius);box-shadow:var(--shadow);padding:16px;min-width:0}
+.banner{border-radius:var(--radius);padding:16px;display:grid;gap:4px}
+.banner .lv{font-family:var(--f-head);font-size:1.3rem;font-weight:600}
+.lv0{background:var(--green-bg)} .lv0 .lv{color:var(--green)}
+.lv1{background:var(--yellow-bg)} .lv1 .lv{color:var(--yellow)}
+.lv2{background:var(--red-bg)} .lv2 .lv{color:var(--red)}
+.lvx{background:var(--surface-2)}
+.chip{display:inline-flex;align-items:center;gap:6px;border-radius:999px;padding:2px 10px;font-size:.8rem;font-weight:600;white-space:nowrap}
+.chip::before{content:"";width:8px;height:8px;border-radius:50%;background:currentColor}
+.c0{color:var(--green);background:var(--green-bg)} .c1{color:var(--yellow);background:var(--yellow-bg)} .c2{color:var(--red);background:var(--red-bg)} .cx{color:var(--gray);background:var(--surface-2)}
+.row{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
+.big{font-family:var(--f-num);font-size:2rem;line-height:1.1;font-variant-numeric:tabular-nums}
+.big small{font-size:.9rem;color:var(--ink-soft);font-family:var(--f-body)}
+.kv{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:10px}
+.kv div{background:var(--surface-2);border-radius:8px;padding:8px}
+.kv b{display:block;font-family:var(--f-num);font-size:1.05rem;font-weight:500}
+.kv span{font-size:.75rem;color:var(--ink-soft)}
+.grid2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+@media (max-width:520px){.grid2{grid-template-columns:1fr}}
+.bar{height:10px;border-radius:999px;background:var(--surface-2);overflow:hidden;margin:8px 0 4px;position:relative}
+.bar i{display:block;height:100%;background:var(--water);border-radius:999px}
+.bar .tick{position:absolute;top:-2px;bottom:-2px;width:2px;background:var(--red)}
+svg{display:block;width:100%;height:auto}
+.chart text{fill:var(--ink-soft);font:11px var(--f-body)}
+.fc{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px;align-items:end;margin-top:8px}
+.fc div{text-align:center;font-size:.75rem;color:var(--ink-soft)}
+.fc .b{background:var(--water);border-radius:4px 4px 0 0;margin:0 auto 4px;width:70%;min-height:2px}
+.fc b{display:block;color:var(--ink);font-family:var(--f-num);font-weight:500;font-size:.85rem}
+ul{margin:6px 0 0;padding-left:1.1rem}
+a{color:var(--accent-deep)}
+.err{color:var(--red);font-size:.85rem}
+@media (prefers-reduced-motion:no-preference){.spin{animation:sp 1s linear infinite}@keyframes sp{to{transform:rotate(360deg)}}}
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <div>
+      <div class="small soft">ออฟฟิศ สุวรรณหงษ์ · เทศบาลเมืองพนัสนิคม</div>
+      <h1>น้ำพนัสสด</h1>
+    </div>
+    <button id="refresh" type="button">↻ ดึงใหม่</button>
+  </header>
+
+  <section id="banner" class="banner lvx" aria-live="polite">
+    <div class="lv">กำลังดึงข้อมูล…</div>
+    <div class="small soft" id="bannerSub">ข้อมูลสดจากคลังข้อมูลน้ำแห่งชาติ (สสน.) และกรมชลประทาน</div>
+  </section>
+
+  <section class="card" id="kgt">
+    <div class="row">
+      <div><h2>คลองหลวง บ้านท่าบุญมี</h2><div class="small soft">Kgt.19A · ท้ายอ่างคลองหลวง ก่อนเข้าพนัส</div></div>
+      <span class="chip cx" id="kgtChip">รอข้อมูล</span>
+    </div>
+    <div class="big" style="margin-top:10px"><span id="kgtWl">–</span> <small>ม.รทก.</small></div>
+    <div class="kv">
+      <div><b id="kgtBank">–</b><span>ต่ำกว่าตลิ่ง (ม.)</span></div>
+      <div><b id="kgtQ">–</b><span>น้ำไหล (ลบ.ม./วิ)</span></div>
+      <div><b id="kgtD3">–</b><span>3 ชม. ล่าสุด</span></div>
+    </div>
+    <div style="margin-top:12px" id="kgtChart" aria-label="กราฟระดับน้ำ 3 วัน"></div>
+    <div class="small soft" id="kgtTime"></div>
+  </section>
+
+  <div class="grid2">
+    <section class="card" id="bb">
+      <div class="row"><h2>อ่างบ้านบึง</h2><span class="chip cx" id="bbChip">รอข้อมูล</span></div>
+      <div class="small soft">ต้นน้ำฝั่งห้วยเกวียน</div>
+      <div class="big" style="margin-top:8px"><span id="bbPct">–</span><small>%</small></div>
+      <div class="bar"><i id="bbBar" style="width:0"></i><span class="tick" style="left:calc(95% / 1.4)" title="95%"></span></div>
+      <div class="small soft" id="bbInfo"></div>
+    </section>
+    <section class="card" id="kl">
+      <div class="row"><h2>อ่างคลองหลวง</h2><span class="chip cx" id="klChip">รอข้อมูล</span></div>
+      <div class="small soft">รัชชโลทร · ความจุปกติ 98 ล้าน ลบ.ม.</div>
+      <div class="big" style="margin-top:8px"><span id="klPct">–</span><small>%</small></div>
+      <div class="bar"><i id="klBar" style="width:0"></i><span class="tick" style="left:calc(100% / 1.4)" title="100%"></span></div>
+      <div class="small soft" id="klInfo"></div>
+    </section>
+    <section class="card" id="rain">
+      <div class="row"><h2>ฝนวัดจริง</h2><span class="chip cx" id="rainChip">รอข้อมูล</span></div>
+      <div class="small soft">สถานีในรัศมี 25 กม. จากออฟฟิศ</div>
+      <div class="big" style="margin-top:8px"><span id="rain1">–</span> <small>มม./ชม. สูงสุด</small></div>
+      <div class="small soft" id="rainInfo"></div>
+    </section>
+    <section class="card" id="bpk">
+      <div class="row"><h2>บางปะกง (ปลายน้ำ)</h2><span class="chip cx" id="bpkChip">รอข้อมูล</span></div>
+      <div class="small soft">น้ำขึ้นสูงทำให้คลองระบายช้า</div>
+      <div class="big" style="margin-top:8px"><span id="bpkWl">–</span> <small>ม.รทก.</small></div>
+      <div class="small soft" id="bpkInfo"></div>
+    </section>
+  </div>
+
+  <section class="card">
+    <div class="row"><h2>ฝนพยากรณ์ 5 วัน</h2><span class="small soft">ECMWF · จุดออฟฟิศ</span></div>
+    <div class="fc" id="fc"></div>
+    <div class="small soft" style="margin-top:6px">แบบจำลองมักให้ฝนต่ำกว่าจริง 1.3–4 เท่า ใช้ดูแนวโน้ม</div>
+  </section>
+
+  <section class="card small">
+    <h2 style="font-size:.95rem">เกณฑ์ที่ใช้</h2>
+    <ul class="soft">
+      <li>คลองหลวง: เฝ้าระวัง ≥16.8 ม. หรือ ≥32 ลบ.ม./วิ · อันตราย ≥17.0 ม. หรือ ≥40 (ตอนท่วม 25–26 ก.ย. 69 = 17.03 ม./40)</li>
+      <li>อ่างบ้านบึง: เฝ้าระวัง ≥90% · อันตราย ≥95%</li>
+      <li>ฝน 1 ชม.: เฝ้าระวัง ≥20 มม. · อันตราย ≥35 มม. (ท่อในเมืองรับไม่ทัน)</li>
+      <li>อ่างคลองหลวง: อันตรายเมื่อระบาย ≥2 ล้าน ลบ.ม./วัน (ปี 56 อ่างแตก 2.5 ล้าน/วัน น้ำเข้าเมือง)</li>
+    </ul>
+    <p class="soft" style="margin:8px 0 0">ห้วยเกวียน (น้ำหลักที่ท่วมเมืองรอบ ก.ย.) ไม่มีสถานีวัด หน้านี้มองไม่เห็นจุดนั้น · ดูเพิ่ม <a href="https://www.thaiwater.net/weather/radar" target="_blank" rel="noopener">เรดาร์ฝน</a> · <a href="https://www.thaiwater.net/water/wl" target="_blank" rel="noopener">thaiwater</a></p>
+    <p class="soft" id="foot" style="margin:6px 0 0">หน้านี้ดึงใหม่เองทุก 10 นาที</p>
+  </section>
+</main>
+
+<script>
+const API = "https://api-v3.thaiwater.net/api/v1/thaiwater30";
+const OFFICE = [13.445963, 101.176828];
+const KGT = 504997, BPK = 154, KGT_BANK = 18.37, BPK_BANK = 1.665;
+const DAM_KL = 58864, DAM_BB = 622;
+const LV_TXT = ["ปกติ", "เฝ้าระวัง", "อันตราย"];
+const $ = id => document.getElementById(id);
+const pad = n => String(n).padStart(2, "0");
+const ymd = d => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+const fmtT = s => s ? s.slice(8, 10) + "/" + s.slice(5, 7) + " " + s.slice(11, 16) + " น." : "";
+const lvl = (v, y, r) => v == null ? 0 : (r != null && v >= r ? 2 : (y != null && v >= y ? 1 : 0));
+function chip(id, lv, txt) { const e = $(id); e.className = "chip c" + lv; e.textContent = txt || LV_TXT[lv]; }
+async function j(url) { const r = await fetch(url); if (!r.ok) throw new Error(r.status); return r.json(); }
+
+function drawChart(pts) {
+  const W = 340, H = 150, L = 34, R = 8, T = 8, B = 22;
+  const t0 = pts[0].t, t1 = pts[pts.length - 1].t;
+  const vals = pts.map(p => p.v);
+  const lo = Math.floor((Math.min(...vals) - .2) * 2) / 2, hi = Math.max(17.2, Math.ceil((Math.max(...vals) + .1) * 2) / 2);
+  const x = t => L + (t - t0) / (t1 - t0 || 1) * (W - L - R), y = v => T + (hi - v) / (hi - lo) * (H - T - B);
+  let s = `<svg class="chart" viewBox="0 0 ${W} ${H}" role="img">`;
+  for (let v = lo; v <= hi + 1e-9; v += .5) s += `<line x1="${L}" x2="${W - R}" y1="${y(v)}" y2="${y(v)}" stroke="var(--border)"/><text x="${L - 4}" y="${y(v) + 4}" text-anchor="end">${v.toFixed(1)}</text>`;
+  [[16.8, "var(--yellow)", "เฝ้าระวัง"], [17.0, "var(--red)", "อันตราย"]].forEach(([v, c, n]) => {
+    if (v <= hi && v >= lo) s += `<line x1="${L}" x2="${W - R}" y1="${y(v)}" y2="${y(v)}" stroke="${c}" stroke-dasharray="4 3"/><text x="${W - R}" y="${y(v) - 3}" text-anchor="end" style="fill:${c}">${n} ${v}</text>`;
+  });
+  const first = new Date(t0); first.setHours(24, 0, 0, 0);
+  for (let d = first; d.getTime() < t1; d = new Date(d.getTime() + 864e5)) {
+    const xx = x(d.getTime());
+    s += `<line x1="${xx}" x2="${xx}" y1="${T}" y2="${H - B}" stroke="var(--border)"/><text x="${xx + 3}" y="${H - 6}">${d.getDate()}/${d.getMonth() + 1}</text>`;
+  }
+  const line = pts.map((p, i) => (i ? "L" : "M") + x(p.t).toFixed(1) + " " + y(p.v).toFixed(1)).join("");
+  s += `<path d="${line}L${x(t1)} ${H - B}L${x(t0)} ${H - B}Z" fill="var(--water-fill)"/><path d="${line}" fill="none" stroke="var(--water)" stroke-width="2"/>`;
+  const e = pts[pts.length - 1]; s += `<circle cx="${x(e.t)}" cy="${y(e.v)}" r="4" fill="var(--water)" stroke="var(--surface)" stroke-width="2"/></svg>`;
+  $("kgtChart").innerHTML = s;
+}
+
+async function loadKgt() {
+  const now = new Date(), st = new Date(now - 3 * 864e5);
+  const d = await j(`${API}/public/waterlevel_graph?station_type=tele_waterlevel&station_id=${KGT}&start_date=${ymd(st)}&end_date=${ymd(now)}%2023:59`);
+  const pts = d.data.graph_data.filter(p => p.value != null).map(p => ({ t: new Date(p.datetime.replace(" ", "T")).getTime(), v: p.value, q: p.discharge, s: p.datetime }));
+  const e = pts[pts.length - 1];
+  const p3 = pts.filter(p => e.t - p.t >= 3 * 36e5).pop();
+  const d3 = p3 ? e.v - p3.v : null;
+  const lv = Math.max(lvl(e.v, 16.8, 17.0), lvl(e.q, 32, 40));
+  $("kgtWl").textContent = e.v.toFixed(2);
+  $("kgtBank").textContent = (KGT_BANK - e.v).toFixed(2);
+  $("kgtQ").textContent = e.q != null ? e.q.toFixed(1) : "–";
+  $("kgtD3").textContent = d3 == null ? "–" : (d3 >= 0 ? "+" : "−") + Math.abs(d3 * 100).toFixed(0) + " ซม.";
+  const age = (Date.now() - e.t) / 36e5;
+  $("kgtTime").textContent = "วัดล่าสุด " + fmtT(e.s) + (age > 3 ? ` · ⚠️ ข้อมูลขาดมา ${age.toFixed(0)} ชม.` : "") + " · ตลิ่งต่ำสุด 18.37 ม.";
+  chip("kgtChip", lv);
+  drawChart(pts);
+  return { lv, txt: `คลองหลวง ${e.v.toFixed(2)} ม.`, d3 };
+}
+
+async function loadDams() {
+  const d = await j(`${API}/analyst/dam`);
+  let m = d.data.dam_medium; m = m.data || m;
+  const pick = id => m.filter(x => x.dam.id === id && x.dam_storage != null).sort((a, b) => a.dam_date < b.dam_date ? 1 : -1)[0];
+  const bb = pick(DAM_BB), kl = pick(DAM_KL), out = [];
+  if (bb) {
+    const p = +bb.dam_storage_percent, lv = lvl(p, 90, 95);
+    $("bbPct").textContent = p.toFixed(1); $("bbBar").style.width = Math.min(p / 1.4, 100) + "%";
+    $("bbInfo").innerHTML = `${bb.dam_storage} / ${bb.dam.normal_storage} ล้าน ลบ.ม. · เข้า <span class="num">${bb.dam_inflow ?? "–"}</span> ออก <span class="num">${bb.dam_released ?? "–"}</span> ล้าน/วัน · ${bb.dam_date.slice(8)}/${bb.dam_date.slice(5, 7)}`;
+    chip("bbChip", lv); out.push({ lv, txt: `บ้านบึง ${p.toFixed(0)}%` });
+  }
+  if (kl) {
+    const p = +kl.dam_storage_percent, lv = lvl(kl.dam_released, null, 2.0);
+    $("klPct").textContent = p.toFixed(1); $("klBar").style.width = Math.min(p / 1.4, 100) + "%";
+    $("klInfo").innerHTML = `${kl.dam_storage} ล้าน ลบ.ม. · เข้า <span class="num">${kl.dam_inflow ?? "–"}</span> ระบาย <span class="num">${kl.dam_released ?? "–"}</span> ล้าน/วัน · ${kl.dam_date.slice(8)}/${kl.dam_date.slice(5, 7)}`;
+    chip("klChip", lv, lv ? LV_TXT[lv] : (p > 100 ? "เกินความจุ" : "ปกติ"));
+    if (!lv && p > 100) $("klChip").className = "chip c1";
+    out.push({ lv, txt: `อ่างคลองหลวง ${p.toFixed(0)}%` });
+  }
+  return out;
+}
+
+async function loadRain() {
+  const d = await j(`${API}/public/rain_24h`);
+  let best = null, n = 0;
+  for (const x of d.data) {
+    const s = x.station || {}, la = +s.tele_station_lat, lo = +s.tele_station_long;
+    if (!la || !lo) continue;
+    const km = Math.hypot((la - OFFICE[0]) * 111, (lo - OFFICE[1]) * 108);
+    if (km > 25 || x.rain_24h == null) continue;
+    const t = new Date((x.rainfall_datetime || "").slice(0, 16).replace(" ", "T")).getTime();
+    if (!(Date.now() - t < 2 * 36e5)) continue;
+    n++;
+    const r1 = +(x.rain_1h || 0), r24 = +x.rain_24h;
+    if (!best || r1 > best.r1 || (r1 === best.r1 && r24 > best.r24)) best = { r1, r24, name: s.tele_station_name?.th || "?", km, t: x.rainfall_datetime };
+  }
+  if (!best) { $("rain1").textContent = "–"; $("rainInfo").textContent = "ไม่มีสถานีรายงานใน 2 ชม."; chip("rainChip", 0, "ไม่มีข้อมูล"); return { lv: 0 }; }
+  const lv = lvl(best.r1, 20, 35);
+  $("rain1").textContent = best.r1.toFixed(0);
+  $("rainInfo").textContent = `${best.name} (${best.km.toFixed(0)} กม.) · 24 ชม. ${best.r24.toFixed(0)} มม. · ${n} สถานี · ${fmtT(best.t)}`;
+  chip("rainChip", lv);
+  return { lv, txt: best.r1 >= 1 ? `ฝน ${best.r1.toFixed(0)} มม./ชม.` : null };
+}
+
+async function loadBpk() {
+  const now = new Date(), st = new Date(now - 864e5);
+  const d = await j(`${API}/public/waterlevel_graph?station_type=tele_waterlevel&station_id=${BPK}&start_date=${ymd(st)}&end_date=${ymd(now)}%2023:59`);
+  const pts = d.data.graph_data.filter(p => p.value != null);
+  const e = pts[pts.length - 1], mx = Math.max(...pts.map(p => p.value));
+  $("bpkWl").textContent = e.value.toFixed(2);
+  $("bpkInfo").textContent = `สูงสุด 24 ชม. ${mx.toFixed(2)} ม. (ตอนท่วม ก.ย. 1.45) · ตลิ่ง ${BPK_BANK} ม. · ${fmtT(e.datetime)}`;
+  chip("bpkChip", mx >= 1.4 ? 1 : 0, mx >= 1.4 ? "น้ำขึ้นสูง" : "ปกติ");
+}
+
+async function loadFc() {
+  const d = await j(`https://api.open-meteo.com/v1/forecast?latitude=${OFFICE[0]}&longitude=${OFFICE[1]}&daily=precipitation_sum&models=ecmwf_ifs025&timezone=Asia%2FBangkok&forecast_days=5`);
+  const days = d.daily.time, mm = d.daily.precipitation_sum.map(v => v || 0), mx = Math.max(30, ...mm);
+  const wd = ["อา", "จ", "อ", "พ", "พฤ", "ศ", "ส"];
+  $("fc").innerHTML = days.map((t, i) => { const dt = new Date(t + "T00:00"); return `<div><div class="b" style="height:${(mm[i] / mx * 70).toFixed(0)}px"></div><b>${mm[i].toFixed(0)}</b>${i ? wd[dt.getDay()] + " " + dt.getDate() : "วันนี้"}</div>`; }).join("");
+}
+
+let busy = false;
+async function load() {
+  if (busy) return; busy = true;
+  const btn = $("refresh"); btn.textContent = "กำลังดึง…"; btn.disabled = true;
+  const res = await Promise.allSettled([loadKgt(), loadDams(), loadRain(), loadBpk(), loadFc()]);
+  const items = [], fails = [];
+  const names = ["คลองหลวง", "อ่าง", "ฝน", "บางปะกง", "ฝนพยากรณ์"];
+  res.forEach((r, i) => { if (r.status === "fulfilled") { [].concat(r.value || []).forEach(v => v && v.lv != null && items.push(v)); } else fails.push(names[i]); });
+  const lv = items.length ? Math.max(...items.map(v => v.lv)) : null;
+  const b = $("banner");
+  if (lv == null) { b.className = "banner lvx"; b.querySelector(".lv").textContent = "ดึงข้อมูลไม่ได้"; }
+  else {
+    b.className = "banner lv" + lv;
+    b.querySelector(".lv").textContent = ["🟢 ปกติ", "🟡 เฝ้าระวัง", "🔴 อันตราย"][lv];
+  }
+  const hot = items.filter(v => v.lv >= 1).map(v => v.txt).filter(Boolean);
+  $("bannerSub").innerHTML = (hot.length ? "ข้ามเกณฑ์: " + hot.join(" · ") : "ทุกจุดยังต่ำกว่าเกณฑ์") +
+    (fails.length ? `<br><span class="err">ดึงไม่ได้: ${fails.join(", ")} (ลองกดดึงใหม่)</span>` : "");
+  const n = new Date(); $("foot").textContent = `ดึงล่าสุด ${pad(n.getHours())}:${pad(n.getMinutes())} น. · หน้านี้ดึงใหม่เองทุก 10 นาที และทุกครั้งที่กลับมาเปิด`;
+  btn.textContent = "↻ ดึงใหม่"; btn.disabled = false; busy = false;
+}
+$("refresh").addEventListener("click", load);
+document.addEventListener("visibilitychange", () => { if (!document.hidden) load(); });
+setInterval(() => { if (!document.hidden) load(); }, 6e5);
+load();
+</script>
+</body>
+</html>
