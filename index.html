@@ -4,78 +4,160 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="referrer" content="no-referrer">
-<meta name="theme-color" content="#F0EEE6">
+<meta name="theme-color" content="#F0EEE6" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#1C1B19" media="(prefers-color-scheme: dark)">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="น้ำพนัส">
 <title>น้ำพนัสสด</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+Thai:wght@500;600&family=Sarabun:wght@400;600&family=IBM+Plex+Mono:wght@500&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+Thai:wght@500;600;700&family=Sarabun:wght@400;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap">
 <style>
-/* หน้าเดียวแนวตั้งสำหรับมือถือ: แถบสถานะรวม → การ์ดคลองหลวง (กราฟ) → การ์ดย่อย 2 คอลัมน์ → ฝนพยากรณ์ */
+/* หน้าเดียวแนวตั้งสำหรับมือถือ (ออกแบบที่ 360px):
+   ป้ายสถานะรวม → การ์ดที่ระดับสูงสุดเลื่อนขึ้นเอง → จุด A → คลองกลางเมือง (จำลอง) → คลองหลวง → อ่าง 2 ใบ → ฝน → เรดาร์ → ข้อมูลเพิ่ม
+   สีสถานะ = เขียว/เหลือง/ส้ม/แดง/เทา เท่านั้น (ส้ม accent #D97757 ใช้กับปุ่ม/ลิงก์ ไม่ใช่สถานะ) · เส้นอ้างอิง ก.ย.69 = เส้นประม่วง */
 :root{
-  --bg:#F0EEE6; --surface:#FFFFFF; --surface-2:#FAF9F5;
-  --ink:#1F1E1D; --ink-soft:#6B6A63; --border:#E6E2D6;
+  --bg:#F0EEE6; --surface:#FFFFFF; --surface-2:#FAF9F5; --track:#ECE8DD;
+  --ink:#1F1E1D; --ink-soft:#5F5E57; --border:#E6E2D6;
   --accent:#D97757; --accent-deep:#BD5D3A;
-  --red:#C44536; --yellow:#B08A12; --green:#5B7A5B; --gray:#9B998F;
-  --red-bg:#F6E1DD; --yellow-bg:#F4ECD2; --green-bg:#E3EBE2;
-  --water:#3E6E8E; --water-fill:rgba(62,110,142,.14);
-  --radius:12px; --shadow:0 1px 3px rgba(31,30,29,.06),0 10px 30px rgba(31,30,29,.05);
+  --red:#C0392B; --orange:#C76A12; --yellow:#A88207; --green:#4E7A52; --gray:#8A887F;
+  --red-bg:#F7E0DC; --orange-bg:#F8E5D2; --yellow-bg:#F6EDCB; --green-bg:#E2EDE1; --gray-bg:#ECEAE4;
+  --zone-g:#CFE3CC; --zone-y:#F3E3A6; --zone-o:#F2C79B; --zone-r:#EDB1A8;
+  --ref:#7B5EA7; --land:#D9CDB4; --land-line:#B8A988;
+  --water:#2F6F98; --water-fill:rgba(47,111,152,.22); --water-top:#2F6F98;
+  --hero-0:#3F6E46; --hero-1:#E5BE35; --hero-15:#D9822B; --hero-2:#B3322A; --hero-x:#6E6C64;
+  --hero-ink-0:#fff; --hero-ink-1:#2A2205; --hero-ink-15:#2A1605; --hero-ink-2:#fff; --hero-ink-x:#fff;
+  --radius:14px; --shadow:0 1px 3px rgba(31,30,29,.06),0 10px 30px rgba(31,30,29,.05);
   --f-head:'Noto Serif Thai',Georgia,serif; --f-body:'Sarabun',-apple-system,sans-serif; --f-num:'IBM Plex Mono',ui-monospace,monospace;
 }
 @media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
-  --bg:#1C1B19; --surface:#262522; --surface-2:#2D2B28; --ink:#EDEBE4; --ink-soft:#A8A59B; --border:#3A3833;
-  --accent:#E08A6B; --accent-deep:#E8A085; --red:#E46A5A; --yellow:#D9B648; --green:#8DB08D; --gray:#8A877E;
-  --red-bg:#3E2622; --yellow-bg:#3A321C; --green-bg:#243024; --water:#7FB0D0; --water-fill:rgba(127,176,208,.16);
-  --shadow:0 1px 3px rgba(0,0,0,.3); color-scheme:dark}}
+  --bg:#1C1B19; --surface:#262522; --surface-2:#2D2B28; --track:#353330; --ink:#EDEBE4; --ink-soft:#B3B0A6; --border:#3A3833;
+  --accent:#E08A6B; --accent-deep:#E8A085;
+  --red:#F07A6A; --orange:#F0A35A; --yellow:#E2C04F; --green:#8FC08F; --gray:#9C998F;
+  --red-bg:#43261F; --orange-bg:#40301C; --yellow-bg:#3B3319; --green-bg:#233225; --gray-bg:#33312D;
+  --zone-g:#335A38; --zone-y:#6A5A1C; --zone-o:#7A4A1C; --zone-r:#7E3128;
+  --ref:#B9A2E3; --land:#4A4335; --land-line:#6B604A;
+  --water:#6FB0DA; --water-fill:rgba(111,176,218,.25); --water-top:#8CC4E8;
+  --hero-0:#2F5A36; --hero-1:#C9A42A; --hero-15:#C27022; --hero-2:#A3302A; --hero-x:#4A4843;
+  --hero-ink-1:#1E1803; --hero-ink-15:#1E0F02;
+  --shadow:0 1px 3px rgba(0,0,0,.35); color-scheme:dark}}
 :root[data-theme="dark"]{
-  --bg:#1C1B19; --surface:#262522; --surface-2:#2D2B28; --ink:#EDEBE4; --ink-soft:#A8A59B; --border:#3A3833;
-  --accent:#E08A6B; --accent-deep:#E8A085; --red:#E46A5A; --yellow:#D9B648; --green:#8DB08D; --gray:#8A877E;
-  --red-bg:#3E2622; --yellow-bg:#3A321C; --green-bg:#243024; --water:#7FB0D0; --water-fill:rgba(127,176,208,.16);
-  --shadow:0 1px 3px rgba(0,0,0,.3); color-scheme:dark}
+  --bg:#1C1B19; --surface:#262522; --surface-2:#2D2B28; --track:#353330; --ink:#EDEBE4; --ink-soft:#B3B0A6; --border:#3A3833;
+  --accent:#E08A6B; --accent-deep:#E8A085;
+  --red:#F07A6A; --orange:#F0A35A; --yellow:#E2C04F; --green:#8FC08F; --gray:#9C998F;
+  --red-bg:#43261F; --orange-bg:#40301C; --yellow-bg:#3B3319; --green-bg:#233225; --gray-bg:#33312D;
+  --zone-g:#335A38; --zone-y:#6A5A1C; --zone-o:#7A4A1C; --zone-r:#7E3128;
+  --ref:#B9A2E3; --land:#4A4335; --land-line:#6B604A;
+  --water:#6FB0DA; --water-fill:rgba(111,176,218,.25); --water-top:#8CC4E8;
+  --hero-0:#2F5A36; --hero-1:#C9A42A; --hero-15:#C27022; --hero-2:#A3302A; --hero-x:#4A4843;
+  --hero-ink-1:#1E1803; --hero-ink-15:#1E0F02;
+  --shadow:0 1px 3px rgba(0,0,0,.35); color-scheme:dark}
 *{box-sizing:border-box}
 html,body{margin:0}
-body{background:var(--bg);color:var(--ink);font:16px/1.6 var(--f-body);padding:env(safe-area-inset-top,0px) 16px calc(24px + env(safe-area-inset-bottom,0px))}
+body{background:var(--bg);color:var(--ink);font:16px/1.6 var(--f-body);padding:env(safe-area-inset-top,0px) 16px calc(28px + env(safe-area-inset-bottom,0px));-webkit-text-size-adjust:100%}
 main{max-width:720px;margin:0 auto;display:grid;gap:14px;padding-block:14px}
-h1,h2{font-family:var(--f-head);font-weight:600;margin:0;text-wrap:balance}
-h1{font-size:1.45rem;line-height:1.3}
-h2{font-size:1.05rem}
+h1,h2,h3{font-family:var(--f-head);font-weight:600;margin:0;text-wrap:balance}
+h1{font-size:1.4rem;line-height:1.25}
+h2{font-size:1.08rem;line-height:1.35}
 .num{font-family:var(--f-num);font-variant-numeric:tabular-nums}
 .soft{color:var(--ink-soft)}
-.small{font-size:.82rem}
-header{display:flex;justify-content:space-between;align-items:flex-end;gap:12px;flex-wrap:wrap}
-button{font:600 .9rem var(--f-body);color:var(--ink);background:var(--surface);border:1px solid var(--border);border-radius:999px;padding:8px 16px;cursor:pointer}
-button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
-.card{background:var(--surface);border-radius:var(--radius);box-shadow:var(--shadow);padding:16px;min-width:0}
-.banner{border-radius:var(--radius);padding:16px;display:grid;gap:4px}
-.banner .lv{font-family:var(--f-head);font-size:1.3rem;font-weight:600}
-.lv0{background:var(--green-bg)} .lv0 .lv{color:var(--green)}
-.lv1{background:var(--yellow-bg)} .lv1 .lv{color:var(--yellow)}
-.lv2{background:var(--red-bg)} .lv2 .lv{color:var(--red)}
-.lvx{background:var(--surface-2)}
-.chip{display:inline-flex;align-items:center;gap:6px;border-radius:999px;padding:2px 10px;font-size:.8rem;font-weight:600;white-space:nowrap}
-.chip::before{content:"";width:8px;height:8px;border-radius:50%;background:currentColor}
-.c0{color:var(--green);background:var(--green-bg)} .c1{color:var(--yellow);background:var(--yellow-bg)} .c2{color:var(--red);background:var(--red-bg)} .cx{color:var(--gray);background:var(--surface-2)}
-.row{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
-.big{font-family:var(--f-num);font-size:2rem;line-height:1.1;font-variant-numeric:tabular-nums}
-.big small{font-size:.9rem;color:var(--ink-soft);font-family:var(--f-body)}
+.small{font-size:.84rem}
+a{color:var(--accent-deep)}
+.top{display:flex;justify-content:space-between;align-items:flex-end;gap:12px}
+.top .kick{font-size:.8rem;color:var(--ink-soft)}
+.top nav{display:flex;gap:8px;align-items:center}
+button,.btn{font:600 .9rem var(--f-body);color:var(--ink);background:var(--surface);border:1px solid var(--border);border-radius:999px;padding:8px 14px;cursor:pointer;text-decoration:none;white-space:nowrap}
+button:focus-visible,.btn:focus-visible,summary:focus-visible,a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+button:disabled{opacity:.6}
+
+/* ── ป้ายข้อมูลจำลอง (?demo=) ── */
+.demo{position:sticky;top:0;z-index:5;background:repeating-linear-gradient(45deg,#6B21A8,#6B21A8 12px,#7E3BB8 12px,#7E3BB8 24px);color:#fff;font-weight:700;text-align:center;border-radius:10px;padding:8px 10px;font-size:.95rem}
+
+/* ── ป้ายสถานะรวม ── */
+.hero{border-radius:18px;padding:18px 18px 16px;display:grid;gap:10px;background:var(--hero-x);color:var(--hero-ink-x);box-shadow:var(--shadow)}
+.hero[data-s="0"]{background:var(--hero-0);color:var(--hero-ink-0)}
+.hero[data-s="1"]{background:var(--hero-1);color:var(--hero-ink-1)}
+.hero[data-s="2"]{background:var(--hero-2);color:var(--hero-ink-2)}
+.hero-main{display:flex;align-items:center;gap:14px}
+.puck{flex:none;width:58px;height:58px;border-radius:50%;background:rgba(255,255,255,.92);display:grid;place-items:center;font-size:2rem;line-height:1;box-shadow:0 0 0 4px rgba(255,255,255,.25)}
+.hero-lv{font-family:var(--f-head);font-size:2.3rem;font-weight:700;line-height:1.1}
+.hero-sub{font-size:.95rem;font-weight:600;opacity:.95;line-height:1.35}
+.hero-near{background:rgba(255,255,255,.16);border-radius:10px;padding:8px 12px;font-size:.98rem;line-height:1.45}
+.hero[data-s="1"] .hero-near{background:rgba(255,255,255,.4)}
+.hero-near b{font-family:var(--f-num);font-weight:600}
+.hero-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}
+.mini{font-size:.77rem !important;display:flex;min-width:0;white-space:nowrap;overflow:hidden;align-items:center;gap:6px;border-radius:999px;padding:3px 10px 3px 6px;font-size:.8rem;font-weight:600;text-decoration:none;color:var(--ink);background:var(--surface)}
+.mini i{width:16px;height:16px;border-radius:50%;flex:none;font-style:normal;font-size:.7rem;display:grid;place-items:center;color:#fff}
+.mini b{font-variant-numeric:tabular-nums;font-weight:700;margin-left:auto;padding-left:4px}
+.mini span{overflow:hidden;text-overflow:ellipsis}
+.mini[data-s="0"] i{background:var(--hero-0)} .mini[data-s="0"] i::before{content:"✓"}
+.mini[data-s="1"] i{background:var(--hero-1);color:#2A2205} .mini[data-s="1"] i::before{content:"!"}
+.mini[data-s="15"] i{background:var(--hero-15)} .mini[data-s="15"] i::before{content:"!"}
+.mini[data-s="2"] i{background:var(--hero-2)} .mini[data-s="2"] i::before{content:"!!";font-size:.6rem}
+.mini[data-s="x"] i{background:var(--gray)} .mini[data-s="x"] i::before{content:"?"}
+.mini[data-s="x"]{color:var(--ink-soft)}
+.hero-time{font-size:.8rem;opacity:.9}
+.hero-warn{font-size:.85rem;font-weight:600;background:rgba(0,0,0,.18);border-radius:8px;padding:6px 10px}
+.hero[data-s="1"] .hero-warn{background:rgba(0,0,0,.08)}
+
+/* ── การ์ด ── */
+.cards{display:flex;flex-direction:column;gap:14px}
+.card{background:var(--surface);border-radius:var(--radius);box-shadow:var(--shadow);padding:16px;min-width:0;border-left:6px solid var(--gray);scroll-margin-top:12px}
+.card[data-s="0"]{border-left-color:var(--green)} .card[data-s="1"]{border-left-color:var(--yellow)}
+.card[data-s="15"]{border-left-color:var(--orange)} .card[data-s="2"]{border-left-color:var(--red)}
+.card[data-s="x"]{border-left-color:var(--gray)}
+.card[data-s="2"]{box-shadow:0 0 0 2px var(--red-bg),var(--shadow)}
+.ch{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
+.ch h2 small{display:block;font-family:var(--f-body);font-weight:400;font-size:.8rem;color:var(--ink-soft);line-height:1.35;margin-top:1px}
+.meta{display:flex;flex-wrap:wrap;gap:4px 8px;align-items:center;margin-top:6px;font-size:.78rem;color:var(--ink-soft)}
+.tag{display:inline-block;border-radius:6px;padding:0 7px;font-size:.74rem;font-weight:700;letter-spacing:.01em;border:1.5px solid currentColor;color:var(--ink-soft);line-height:1.6}
+.tag.t-real{border-style:solid} .tag.t-model{border-style:dashed} .tag.t-eye{border-style:dotted} .tag.t-fc{border-style:dashed;color:var(--accent-deep)}
+.when.late{color:var(--ink);font-weight:700;background:var(--gray-bg);border-radius:6px;padding:0 6px}
+.chip{display:inline-flex;align-items:center;gap:6px;border-radius:999px;padding:3px 11px;font-size:.84rem;font-weight:700;white-space:nowrap;flex:none}
+.chip::before{content:"";width:9px;height:9px;border-radius:50%;background:currentColor}
+.c0{color:var(--green);background:var(--green-bg)} .c1{color:var(--yellow);background:var(--yellow-bg)} .c15{color:var(--orange);background:var(--orange-bg)}
+.c2{color:var(--red);background:var(--red-bg)} .cx{color:var(--gray);background:var(--gray-bg)}
+.hl{display:flex;align-items:baseline;flex-wrap:wrap;gap:4px 10px;margin-top:10px}
+.big{font-family:var(--f-num);font-size:2.3rem;font-weight:600;line-height:1;font-variant-numeric:tabular-nums;letter-spacing:-.02em}
+.unit{font-size:.9rem;color:var(--ink-soft)}
+.trend{font-size:.85rem;font-weight:600;border-radius:999px;background:var(--surface-2);padding:1px 9px}
+.say{margin:8px 0 0;font-size:1rem;font-weight:600;line-height:1.45}
+.say b{font-variant-numeric:tabular-nums;font-weight:700}
+.note{font-size:.82rem;color:var(--ink-soft);margin-top:6px;line-height:1.45}
+.late-box{margin-top:8px;background:var(--gray-bg);border-radius:8px;padding:6px 10px;font-size:.86rem;font-weight:600}
+.sub{margin-top:14px;padding-top:12px;border-top:1px solid var(--border)}
+.sub h3{font-size:.95rem}
+svg{display:block;width:100%;height:auto}
+.viz{margin-top:8px;overflow:visible}
+.viz text{font:11px var(--f-body);fill:var(--ink-soft)}
+.viz .lbl{paint-order:stroke;stroke:var(--surface);stroke-width:3.5px;stroke-linejoin:round}
+.viz .n{font-family:var(--f-num);font-weight:600}
+.viz .strong{fill:var(--ink);font-weight:700}
+.chart text{fill:var(--ink-soft);font:11px var(--f-body)}
 .kv{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:10px}
 .kv div{background:var(--surface-2);border-radius:8px;padding:8px}
 .kv b{display:block;font-family:var(--f-num);font-size:1.05rem;font-weight:500}
 .kv span{font-size:.75rem;color:var(--ink-soft)}
-.grid2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
-@media (max-width:520px){.grid2{grid-template-columns:1fr}}
-.bar{height:10px;border-radius:999px;background:var(--surface-2);overflow:hidden;margin:8px 0 4px;position:relative}
-.bar i{display:block;height:100%;background:var(--water);border-radius:999px}
-.bar .tick{position:absolute;top:-2px;bottom:-2px;width:2px;background:var(--red)}
-svg{display:block;width:100%;height:auto}
-.chart text{fill:var(--ink-soft);font:11px var(--f-body)}
+.badge{display:inline-block;border-radius:8px;padding:3px 10px;font-weight:700;font-size:.92rem;background:var(--surface-2)}
+.empty{margin-top:10px;padding:14px;border:1.5px dashed var(--border);border-radius:10px;text-align:center;color:var(--ink-soft);font-weight:600}
 .fc{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px;align-items:end;margin-top:8px}
 .fc div{text-align:center;font-size:.75rem;color:var(--ink-soft)}
 .fc .b{background:var(--water);border-radius:4px 4px 0 0;margin:0 auto 4px;width:70%;min-height:2px}
 .fc b{display:block;color:var(--ink);font-family:var(--f-num);font-weight:500;font-size:.85rem}
 ul{margin:6px 0 0;padding-left:1.1rem}
-a{color:var(--accent-deep)}
 .err{color:var(--red);font-size:.85rem}
+
+/* ── ข้อมูลเพิ่ม (accordion) ── */
+.more{padding:6px 16px;border-left-color:var(--border)}
+.more details{border-bottom:1px solid var(--border)}
+.more details:last-child{border-bottom:0}
+.more summary{cursor:pointer;list-style:none;display:flex;justify-content:space-between;align-items:center;gap:10px;padding:12px 0;font-weight:600}
+.more summary::-webkit-details-marker{display:none}
+.more summary::after{content:"+";font:600 1.2rem var(--f-num);color:var(--ink-soft)}
+.more details[open] summary::after{content:"–"}
+.more .body{padding:0 0 14px}
+.more summary .chip{font-size:.74rem;padding:1px 9px;margin-left:auto}
+
+/* ── เรดาร์ (ของเดิม) ── */
 .radarwrap{margin-top:10px;background:var(--surface-2);border-radius:8px;overflow:hidden}
 #radarCv{display:block;width:100%;height:auto;image-rendering:pixelated}
 .radarctl{display:flex;align-items:center;gap:10px;margin-top:8px}
@@ -93,122 +175,199 @@ a{color:var(--accent-deep)}
 .legend{display:flex;flex-wrap:wrap;gap:4px 14px;margin-top:6px;align-items:center}
 .legend i{display:inline-block;width:14px;height:0;border-top:2px solid;vertical-align:middle;margin-right:5px}
 .legend .ramp{width:90px;height:8px;border-radius:4px;background:linear-gradient(90deg,#88ddee,#0077aa,#004768,#ffee00,#ff8100,#c10000,#ff77ff)}
-@media (prefers-reduced-motion:no-preference){.spin{animation:sp 1s linear infinite}@keyframes sp{to{transform:rotate(360deg)}}}
+@media (prefers-reduced-motion:no-preference){.card{transition:border-color .3s}}
+@media (min-width:600px){.hero-lv{font-size:2.6rem} svg.viz{max-width:520px;margin-inline:auto}}
 </style>
 </head>
 <body>
 <main>
-  <header>
+  <div class="demo" id="demoBar" hidden>ข้อมูลจำลองทดสอบ — ไม่ใช่ข้อมูลจริง</div>
+  <div class="top">
     <div>
-      <div class="small soft">ออฟฟิศ สุวรรณหงษ์ · เทศบาลเมืองพนัสนิคม</div>
+      <div class="kick">ออฟฟิศ สุวรรณหงษ์ · เทศบาลเมืองพนัสนิคม</div>
       <h1>น้ำพนัสสด</h1>
     </div>
-    <button id="refresh" type="button">↻ ดึงใหม่</button>
-  </header>
-
-  <section id="banner" class="banner lvx" aria-live="polite">
-    <div class="lv">กำลังดึงข้อมูล…</div>
-    <div class="small soft" id="bannerSub">ข้อมูลสดจากคลังข้อมูลน้ำแห่งชาติ (สสน.) และกรมชลประทาน</div>
-  </section>
-
-  <section class="card" id="kgt">
-    <div class="row">
-      <div><h2>คลองหลวง บ้านท่าบุญมี</h2><div class="small soft">Kgt.19A · ท้ายอ่างคลองหลวง ก่อนเข้าพนัส</div></div>
-      <span class="chip cx" id="kgtChip">รอข้อมูล</span>
-    </div>
-    <div class="big" style="margin-top:10px"><span id="kgtWl">–</span> <small>ม.รทก.</small></div>
-    <div class="kv">
-      <div><b id="kgtBank">–</b><span>ต่ำกว่าตลิ่ง (ม.)</span></div>
-      <div><b id="kgtQ">–</b><span>น้ำไหล (ลบ.ม./วิ)</span></div>
-      <div><b id="kgtD3">–</b><span>3 ชม. ล่าสุด</span></div>
-    </div>
-    <div style="margin-top:12px" id="kgtChart" aria-label="กราฟระดับน้ำ 3 วัน"></div>
-    <div class="small soft" id="kgtTime"></div>
-  </section>
-
-  <div class="grid2">
-    <section class="card" id="bb">
-      <div class="row"><h2>อ่างบ้านบึง</h2><span class="chip cx" id="bbChip">รอข้อมูล</span></div>
-      <div class="small soft">ถ้าเต็มจะล้นทางระบาย ไหลผ่านด้านตะวันตกของเมือง (ไม่ผ่านกลางเมือง)</div>
-      <div class="big" style="margin-top:8px"><span id="bbPct">–</span><small>%</small></div>
-      <div class="bar"><i id="bbBar" style="width:0"></i><span class="tick" style="left:calc(95% / 1.4)" title="95%"></span></div>
-      <div class="small" id="bbFull" style="margin-top:6px;font-weight:600"></div>
-      <div class="small soft" id="bbInfo"></div>
-    </section>
-    <section class="card" id="kl">
-      <div class="row"><h2>อ่างคลองหลวง</h2><span class="chip cx" id="klChip">รอข้อมูล</span></div>
-      <div class="small soft">ระบายลงคลองหลวง อ้อมเมืองด้านตะวันออก/เหนือ · ความจุปกติ 98 ล้าน ลบ.ม. (มีบานคุม เกิน 100% ได้)</div>
-      <div class="big" style="margin-top:8px"><span id="klPct">–</span><small>%</small></div>
-      <div class="bar"><i id="klBar" style="width:0"></i><span class="tick" style="left:calc(100% / 1.4)" title="100%"></span></div>
-      <div class="small soft" id="klInfo"></div>
-    </section>
-    <section class="card" id="rain">
-      <div class="row"><h2>ฝนวัดจริง</h2><span class="chip cx" id="rainChip">รอข้อมูล</span></div>
-      <div class="small soft">สถานีในรัศมี 25 กม. จากออฟฟิศ</div>
-      <div class="big" style="margin-top:8px"><span id="rain1">–</span> <small>มม./ชม. สูงสุด</small></div>
-      <div class="small soft" id="rainInfo"></div>
-    </section>
-    <section class="card" id="bpk">
-      <div class="row"><h2>บางปะกง (ปลายน้ำ)</h2><span class="chip cx" id="bpkChip">รอข้อมูล</span></div>
-      <div class="small soft">น้ำขึ้นสูงทำให้คลองระบายช้า</div>
-      <div class="big" style="margin-top:8px"><span id="bpkWl">–</span> <small>ม.รทก.</small></div>
-      <div class="small soft" id="bpkInfo"></div>
-    </section>
+    <nav><a class="btn" href="map.html">แผนที่</a><button id="refresh" type="button">↻ ดึงใหม่</button></nav>
   </div>
 
-  <section class="card" id="radar">
-    <div class="row">
-      <div><h2>เรดาร์ฝน ย้อน 2 ชม. + พยากรณ์ 90 นาที</h2><div class="small soft">ภาพจริงย้อนหลัง 2 ชม. (ทุก 10 นาที) แล้วต่อภาพไปข้างหน้า 90 นาทีตามทิศ/ความเร็วที่กลุ่มฝนกำลังเคลื่อน · ไม่เห็นพายุที่จะก่อตัวใหม่</div></div>
-      <span class="chip cx" id="radarChip">รอข้อมูล</span>
+  <!-- 1) ป้ายสถานะรวม -->
+  <section id="hero" class="hero" data-s="x" aria-live="polite">
+    <div class="hero-main">
+      <div class="puck" id="heroIco" aria-hidden="true">⏳</div>
+      <div><div class="hero-lv" id="heroLv">กำลังดึงข้อมูล…</div><div class="hero-sub" id="heroSub">วัดจริงจาก สสน./กรมชลฯ · แบบจำลองจากเครื่องออฟฟิศ</div></div>
     </div>
-    <div class="radarwrap" id="radarWrap"><canvas id="radarCv" width="308" height="264" aria-label="ภาพเรดาร์ฝนรอบพนัสนิคม พร้อมขอบลุ่มน้ำ"></canvas></div>
-    <div class="radarctl">
-      <button id="radarPlay" type="button">▶ เล่น</button>
-      <div class="slidewrap">
-        <input id="radarSlider" type="range" min="0" max="0" value="0" aria-label="เลือกเวลาภาพเรดาร์ (ย้อนหลังถึงพยากรณ์)">
-        <div class="tl small" id="radarTl" aria-hidden="true"><span>จริง −2ชม.</span><span id="radarTlFc">+90 น.</span></div>
+    <div class="hero-near" id="heroNear" hidden></div>
+    <div class="hero-warn" id="heroWarn" hidden></div>
+    <div class="hero-list" id="heroList"></div>
+    <div class="hero-time" id="heroTime"></div>
+  </section>
+
+  <div class="cards" id="cards">
+    <!-- 2) จุด A (ดูด้วยตา) -->
+    <section class="card" id="cA" data-s="x" data-o="1">
+      <div class="ch">
+        <div><h2>จุด A · สะพานห้วยเกวียน<small>บ้านเกาะสะเดา ฝั่งตะวันตก · ชีพอ่านระดับด้วยตา</small></h2>
+          <div class="meta"><span class="tag t-eye">ดูด้วยตา</span><span class="when" id="aWhen"></span></div></div>
+        <span class="chip cx" id="aChip">รอข้อมูล</span>
       </div>
-      <span class="num small" id="radarTime">–</span>
-    </div>
-    <div class="legend small soft"><span><i style="border-color:var(--accent-deep)"></i>ต้นน้ำกลางเมือง</span><span><i style="border-color:var(--water)"></i>คลองหลวง</span><span><i style="border-color:var(--red)"></i>ตัวเมือง 3 กม.</span><span class="ramp" title="ฟ้า = ฝนเบา · เหลือง ≈ 10–35 · ส้ม/แดง ≥ 35 มม./ชม."></span></div>
-    <div class="kv" id="radarKv"></div>
-    <div id="radarFcBox" class="fcbox" hidden>
-      <div class="small fcTxt" style="font-weight:600">ฝนคาดใน 90 นาทีข้างหน้า (พยากรณ์ต่อภาพ)</div>
-      <div class="kv" id="radarFcKv" style="margin-top:6px"></div>
-    </div>
-    <div class="small" id="radarNear" style="margin-top:8px;font-weight:600"></div>
-    <div class="small soft" id="radarInfo" style="margin-top:4px"></div>
-  </section>
+      <div class="hl"><span class="big" id="aBig">–</span><span class="unit" id="aUnit">ม. ต่ำกว่าตลิ่ง</span></div>
+      <div id="aViz"></div>
+      <p class="say" id="aSay"></p>
+      <div class="note" id="aNote">ส่งค่าใหม่: บอกอีหนูว่า "A 1.2" (= ผิวน้ำต่ำกว่าตลิ่ง 1.2 ม. · ติดลบ = ล้นตลิ่ง)</div>
+    </section>
 
-  <section class="card">
-    <div class="row"><h2>ฝนพยากรณ์ 5 วัน</h2><span class="small soft">ECMWF · จุดออฟฟิศ</span></div>
-    <div class="fc" id="fc"></div>
-    <div class="small soft" style="margin-top:6px">แบบจำลองมักให้ฝนต่ำกว่าจริง 1.3–4 เท่า ใช้ดูแนวโน้ม</div>
-  </section>
+    <!-- 3) คลองกลางเมือง (แบบจำลอง) -->
+    <section class="card" id="cVg" data-s="x" data-o="2">
+      <div class="ch">
+        <div><h2>คลองกลางเมือง<small>ผ่านออฟฟิศ · ตลาด · ไม่มีเครื่องวัดจริง ใช้แบบจำลองจากฝน</small></h2>
+          <div class="meta"><span class="tag t-model">แบบจำลอง</span><span class="when" id="vgWhen"></span></div></div>
+        <span class="chip cx" id="vgChip">รอข้อมูล</span>
+      </div>
+      <div class="hl"><span class="big" id="vgBig">–</span><span class="unit">% ของยอดน้ำ ก.ย.69 (ตอนนี้)</span></div>
+      <div id="vgViz"></div>
+      <p class="say" id="vgSay"></p>
+      <div id="vgSpark"></div>
+      <div class="note">100% = ยอดน้ำครั้งตลาดท่วม 30–60 ซม. (ก.ย.69) · ไม่ใช่ระดับน้ำเป็นเซนติเมตร · ค่าคลาดได้ ใช้ดูทิศทางและเวลา</div>
+    </section>
 
-  <section class="card small">
-    <h2 style="font-size:.95rem">น้ำเข้าพนัสมาจากไหน</h2>
-    <ul class="soft">
-      <li><b>คลองกลางเมือง</b> (ไหลจากใต้ขึ้นเหนือ ผ่านออฟฟิศ 140 ม. · ตลาด · บ้านเช่า 44): แยกมาจากลำน้ำสายใหญ่ทางตะวันออกเฉียงใต้ที่จุดแยกห่างเมือง ~8 กม. · ต้นน้ำฝั่งถนน 331 (รวมบ่อหนองเสม็ด/อาหารสยาม) · ไม่มีสถานีวัด</li>
-      <li><b>คลองหลวง</b> อ้อมเมืองด้านตะวันออก/เหนือ: <b>อ่างคลองหลวง</b> · วัดที่บ้านท่าบุญมี</li>
-      <li><b>ห้วยเกวียน</b> (ชื่อตามแผนที่) ไหลผ่านตะวันตกของเมือง ~1.5–2 กม. · <b>อ่างบ้านบึง</b> ไหลผ่านตะวันตก ไกลกว่านั้น (ผลทางอ้อม)</li>
-    </ul>
-    <p class="soft" style="margin:4px 0 0"><a href="map.html"><b>ดูแผนที่ + จุดติดเซนเซอร์ →</b></a> · ไล่จาก OSM + ความสูงพื้นดิน + ภาพดาวเทียม · 5 ต.ค. 69</p>
-  </section>
+    <!-- 4) คลองหลวง (วัดจริง) -->
+    <section class="card" id="cKgt" data-s="x" data-o="3">
+      <div class="ch">
+        <div><h2>คลองหลวง บ้านท่าบุญมี<small>อ้อมเมืองด้านตะวันออก/เหนือ · ท้ายอ่างคลองหลวง (Kgt.19A)</small></h2>
+          <div class="meta"><span class="tag t-real">วัดจริง</span><span class="when" id="kgtWhen"></span></div></div>
+        <span class="chip cx" id="kgtChip">รอข้อมูล</span>
+      </div>
+      <div class="hl"><span class="big" id="kgtWl">–</span><span class="unit">ม. (รทก.)</span><span class="trend" id="kgtD3" hidden></span></div>
+      <div id="kgtViz"></div>
+      <p class="say" id="kgtSay"></p>
+      <div class="sub">
+        <div class="hl" style="margin-top:0"><h3>น้ำไหล</h3><span class="num" style="font-weight:600;font-size:1.25rem" id="kgtQ">–</span><span class="unit">ลบ.ม./วินาที</span></div>
+        <div id="kgtQViz"></div>
+      </div>
+      <div class="sub">
+        <h3>ย้อนหลัง 3 วัน <span class="small soft" style="font-family:var(--f-body);font-weight:400">· สเกลคงที่ ไม่ขยายตาม</span></h3>
+        <div id="kgtChart" aria-label="กราฟระดับน้ำ 3 วัน"></div>
+      </div>
+    </section>
 
-  <section class="card small">
-    <h2 style="font-size:.95rem">เกณฑ์ที่ใช้</h2>
-    <ul class="soft">
-      <li>คลองหลวง: เฝ้าระวัง ≥16.8 ม. หรือ ≥32 ลบ.ม./วิ · อันตราย ≥17.0 ม. หรือ ≥40 (ตอนท่วม 25–26 ก.ย. 69 = 17.03 ม./40)</li>
-      <li>อ่างบ้านบึง: เฝ้าระวัง ≥90% หรือจะเต็มภายใน 5 วัน · อันตราย ≥95%</li>
-      <li>ฝน 1 ชม.: เฝ้าระวัง ≥20 มม. · อันตราย ≥35 มม. (ท่อในเมืองรับไม่ทัน)</li>
-      <li>อ่างคลองหลวง: อันตรายเมื่อระบาย ≥2 ล้าน ลบ.ม./วัน (ปี 56 อ่างแตก 2.5 ล้าน/วัน น้ำเข้าเมือง)</li>
-      <li>เรดาร์ฝน: เฝ้าระวังเมื่อฝน ≥20 มม./ชม. ครอบ ≥10% ของลุ่มใดลุ่มหนึ่ง หรือ ≥35 มม./ชม. แตะลุ่ม ≥3 ช่อง (~4 ตร.กม.) หรือกลุ่มฝนหนักห่าง ≤15 กม. จะถึงใน 1 ชม. · อันตรายเมื่อ ≥35 มม./ชม. ครอบ ≥25% ของลุ่มต้นน้ำกลางเมืองหรือตัวเมือง ติดกัน 2 ภาพขึ้นไป</li>
-      <li>เรดาร์พยากรณ์ (ต่อภาพ ถึง +60 นาที): เฝ้าระวังเมื่อคาดว่าฝน ≥20 มม./ชม. จะครอบ ≥10% ของลุ่มต้นน้ำกลางเมืองหรือตัวเมือง · อันตรายเมื่อคาดว่า ≥35 มม./ชม. จะครอบ ≥25% โดยนับเฉพาะกลุ่มฝนหนักที่เห็นจริงในภาพล่าสุดและภาพก่อนหน้า (กันหลอก) · ภาพ +70 ถึง +90 นาทีดูอย่างเดียว ไม่ใช้เตือน</li>
-    </ul>
-    <p class="soft" style="margin:8px 0 0">คลองกลางเมือง (น้ำหลักที่ท่วมเมืองรอบ ก.ย.) ไม่มีสถานีวัดระดับน้ำ เห็นได้แค่ฝนเรดาร์ในลุ่ม (ประเมินจากสีเรดาร์ คลาดได้ราว 2 เท่า) · ดูเพิ่ม <a href="https://www.rainviewer.com/map.html?loc=13.35,101.25,10" target="_blank" rel="noopener">เรดาร์ RainViewer</a> · <a href="https://www.thaiwater.net/weather/radar" target="_blank" rel="noopener">เรดาร์ thaiwater</a> · <a href="https://www.thaiwater.net/water/wl" target="_blank" rel="noopener">thaiwater</a></p>
-    <p class="soft" id="foot" style="margin:6px 0 0">หน้านี้ดึงใหม่เองทุก 10 นาที</p>
-  </section>
+    <!-- 5) อ่างบ้านบึง -->
+    <section class="card" id="cBb" data-s="x" data-o="4">
+      <div class="ch">
+        <div><h2>อ่างบ้านบึง<small>เต็มแล้วล้นทางระบาย ไหลผ่านด้านตะวันตกของเมือง (ไม่ผ่านกลางเมือง)</small></h2>
+          <div class="meta"><span class="tag t-real">วัดจริง</span><span class="when" id="bbWhen"></span></div></div>
+        <span class="chip cx" id="bbChip">รอข้อมูล</span>
+      </div>
+      <div class="hl"><span class="big" id="bbPct">–</span><span class="unit">% ความจุ</span><span class="badge" id="bbFull" hidden></span></div>
+      <div id="bbViz"></div>
+      <p class="say" id="bbSay"></p>
+      <div class="note" id="bbInfo"></div>
+    </section>
+
+    <!-- 6) อ่างคลองหลวง -->
+    <section class="card" id="cKl" data-s="x" data-o="5">
+      <div class="ch">
+        <div><h2>อ่างคลองหลวง<small>ระบายลงคลองหลวง อ้อมเมืองตะวันออก/เหนือ · มีบานคุม เกิน 100% ได้ ไม่ใช่อันตราย</small></h2>
+          <div class="meta"><span class="tag t-real">วัดจริง</span><span class="when" id="klWhen"></span></div></div>
+        <span class="chip cx" id="klChip">รอข้อมูล</span>
+      </div>
+      <div class="hl"><span class="unit">ระบาย</span><span class="big" id="klRel">–</span><span class="unit">/ <b class="num" style="color:var(--red)">2.0</b> ล้าน ลบ.ม./วัน</span></div>
+      <div id="klViz"></div>
+      <p class="say" id="klSay"></p>
+      <div class="note" id="klInfo"></div>
+    </section>
+
+    <!-- 7) ฝนวัดจริง -->
+    <section class="card" id="cRain" data-s="x" data-o="6">
+      <div class="ch">
+        <div><h2>ฝนวัดจริง 1 ชม.<small>สถานีในรัศมี 25 กม. จากออฟฟิศ · ตัวที่ตกแรงสุด</small></h2>
+          <div class="meta"><span class="tag t-real">วัดจริง</span><span class="when" id="rainWhen"></span></div></div>
+        <span class="chip cx" id="rainChip">รอข้อมูล</span>
+      </div>
+      <div class="hl"><span class="big" id="rain1">–</span><span class="unit">มม./ชม.</span></div>
+      <div id="rainViz"></div>
+      <div class="note" id="rainInfo"></div>
+    </section>
+
+    <!-- 8) เรดาร์ (logic เดิมทั้งหมด) -->
+    <section class="card" id="radar" data-s="x" data-o="7">
+      <div class="ch">
+        <div><h2>เรดาร์ฝน ย้อน 2 ชม. + พยากรณ์ 90 นาที<small>ภาพจริงทุก 10 นาที แล้วต่อภาพไปข้างหน้าตามทิศที่กลุ่มฝนกำลังเคลื่อน · ไม่เห็นพายุที่จะก่อตัวใหม่</small></h2>
+          <div class="meta"><span class="tag t-real">วัดจริง</span><span class="tag t-fc">พยากรณ์</span></div></div>
+        <span class="chip cx" id="radarChip">รอข้อมูล</span>
+      </div>
+      <div class="radarwrap" id="radarWrap"><canvas id="radarCv" width="308" height="264" aria-label="ภาพเรดาร์ฝนรอบพนัสนิคม พร้อมขอบลุ่มน้ำ"></canvas></div>
+      <div class="radarctl">
+        <button id="radarPlay" type="button">▶ เล่น</button>
+        <div class="slidewrap">
+          <input id="radarSlider" type="range" min="0" max="0" value="0" aria-label="เลือกเวลาภาพเรดาร์ (ย้อนหลังถึงพยากรณ์)">
+          <div class="tl small" id="radarTl" aria-hidden="true"><span>จริง −2ชม.</span><span id="radarTlFc">+90 น.</span></div>
+        </div>
+        <span class="num small" id="radarTime">–</span>
+      </div>
+      <div class="legend small soft"><span><i style="border-color:var(--accent-deep)"></i>ต้นน้ำกลางเมือง</span><span><i style="border-color:var(--water)"></i>คลองหลวง</span><span><i style="border-color:var(--red)"></i>ตัวเมือง 3 กม.</span><span class="ramp" title="ฟ้า = ฝนเบา · เหลือง ≈ 10–35 · ส้ม/แดง ≥ 35 มม./ชม."></span></div>
+      <div class="kv" id="radarKv"></div>
+      <div id="radarFcBox" class="fcbox" hidden>
+        <div class="small fcTxt" style="font-weight:600">ฝนคาดใน 90 นาทีข้างหน้า (พยากรณ์ต่อภาพ)</div>
+        <div class="kv" id="radarFcKv" style="margin-top:6px"></div>
+      </div>
+      <div class="small" id="radarNear" style="margin-top:8px;font-weight:600"></div>
+      <div class="small soft" id="radarInfo" style="margin-top:4px"></div>
+    </section>
+
+    <!-- 9) ข้อมูลเพิ่ม -->
+    <section class="card more" id="cMore" data-o="99">
+      <details>
+        <summary><span>บางปะกง (ปลายน้ำ)</span><span class="chip cx" id="bpkChip">รอข้อมูล</span></summary>
+        <div class="body">
+          <div class="meta" style="margin-top:0"><span class="tag t-real">วัดจริง</span><span class="when" id="bpkWhen"></span></div>
+          <div class="hl"><span class="big" style="font-size:1.8rem" id="bpkWl">–</span><span class="unit">ม. (รทก.)</span></div>
+          <div class="note" id="bpkInfo"></div>
+          <div class="note">น้ำขึ้นสูงที่ปลายน้ำทำให้คลองระบายช้า</div>
+        </div>
+      </details>
+      <details>
+        <summary><span>ฝนพยากรณ์ 5 วัน</span><span class="tag t-fc">พยากรณ์</span></summary>
+        <div class="body">
+          <div class="fc" id="fc"></div>
+          <div class="note">ECMWF · จุดออฟฟิศ · แบบจำลองมักให้ฝนต่ำกว่าจริง 1.3–4 เท่า ใช้ดูแนวโน้ม</div>
+        </div>
+      </details>
+      <details>
+        <summary>น้ำเข้าพนัสมาจากไหน</summary>
+        <div class="body small">
+          <ul class="soft">
+            <li><b>คลองกลางเมือง</b> (ไหลจากใต้ขึ้นเหนือ ผ่านออฟฟิศ 140 ม. · ตลาด · บ้านเช่า 44): แยกมาจากลำน้ำสายใหญ่ทางตะวันออกเฉียงใต้ที่จุดแยกห่างเมือง ~8 กม. · ต้นน้ำฝั่งถนน 331 (รวมบ่อหนองเสม็ด/อาหารสยาม) · ไม่มีสถานีวัด → ใช้แบบจำลอง</li>
+            <li><b>คลองหลวง</b> อ้อมเมืองด้านตะวันออก/เหนือ: <b>อ่างคลองหลวง</b> · วัดที่บ้านท่าบุญมี</li>
+            <li><b>ห้วยเกวียน</b> ไหลผ่านตะวันตกของเมือง ~1.5–2 กม. (จุด A อยู่บนสายนี้) · <b>อ่างบ้านบึง</b> ไหลผ่านตะวันตก ไกลกว่านั้น (ผลทางอ้อม)</li>
+          </ul>
+        </div>
+      </details>
+      <details>
+        <summary>เกณฑ์ทั้งหมด</summary>
+        <div class="body small">
+          <ul class="soft">
+            <li>คลองหลวง: เฝ้าระวัง ≥16.8 ม. หรือ ≥32 ลบ.ม./วิ · อันตราย ≥17.0 ม. หรือ ≥40 (ตอนท่วม 25–26 ก.ย. 69 = 17.03 ม./40) · ตลิ่งต่ำสุด 18.37 ม.</li>
+            <li>คลองกลางเมือง (แบบจำลอง, ค่าสูงสุดใน 72 ชม.): เฝ้าระวัง ≥35% · ใกล้อันตราย ≥55% · อันตราย ≥75% ของยอด ก.ย.69</li>
+            <li>จุด A (ตั้งต้น รอปรับเมื่อมีค่ามากขึ้น): เฝ้าระวังเมื่อผิวน้ำต่ำกว่าตลิ่ง ≤0.50 ม. · อันตรายเมื่อถึงตลิ่ง/ล้น · อ้างอิง ก.ย.69: 25 ก.ย. ต่ำกว่าตลิ่ง 0.10 · 26 ก.ย. 23:00 เริ่มล้น +0.10 · 27–29 ก.ย. สูงสุด +0.30–0.50</li>
+            <li>อ่างบ้านบึง: เฝ้าระวัง ≥90% หรือจะเต็มภายใน 5 วัน · อันตราย ≥95%</li>
+            <li>อ่างคลองหลวง: อันตรายเมื่อระบาย ≥2 ล้าน ลบ.ม./วัน (ปี 56 อ่างแตก 2.5 ล้าน/วัน น้ำเข้าเมือง) · % ความจุเกิน 100 ได้ ไม่ใช้ตัดสิน</li>
+            <li>ฝน 1 ชม.: เฝ้าระวัง ≥20 มม. · อันตราย ≥35 มม. (ท่อในเมืองรับไม่ทัน)</li>
+            <li>เรดาร์ฝน: เฝ้าระวังเมื่อฝน ≥20 มม./ชม. ครอบ ≥10% ของลุ่มใดลุ่มหนึ่ง หรือ ≥35 มม./ชม. แตะลุ่ม ≥3 ช่อง (~4 ตร.กม.) หรือกลุ่มฝนหนักห่าง ≤15 กม. จะถึงใน 1 ชม. · อันตรายเมื่อ ≥35 มม./ชม. ครอบ ≥25% ของลุ่มต้นน้ำกลางเมืองหรือตัวเมือง ติดกัน 2 ภาพขึ้นไป</li>
+            <li>เรดาร์พยากรณ์ (ต่อภาพ ถึง +60 นาที): เฝ้าระวังเมื่อคาดว่าฝน ≥20 มม./ชม. จะครอบ ≥10% ของลุ่มต้นน้ำกลางเมืองหรือตัวเมือง · อันตรายเมื่อคาดว่า ≥35 มม./ชม. จะครอบ ≥25% โดยนับเฉพาะกลุ่มฝนหนักที่เห็นจริงในภาพล่าสุดและภาพก่อนหน้า · ภาพ +70 ถึง +90 นาทีดูอย่างเดียว ไม่ใช้เตือน</li>
+            <li>ข้อมูลล่าช้า (การ์ดเป็นสีเทา ไม่นับเป็นเขียว): สถานีวัด >60 นาที · อ่าง >2 วัน · แบบจำลอง >6 ชม. · จุด A >2 วัน · เรดาร์ >40 นาที</li>
+          </ul>
+        </div>
+      </details>
+      <details>
+        <summary>แผนที่ + แหล่งข้อมูล</summary>
+        <div class="body small soft">
+          <p style="margin:0"><a href="map.html"><b>ดูแผนที่น้ำเข้าพนัส + จุดติดเซนเซอร์ →</b></a></p>
+          <p style="margin:6px 0 0">วัดจริง: คลังข้อมูลน้ำแห่งชาติ (สสน.) + กรมชลประทาน ผ่าน <a href="https://www.thaiwater.net/water/wl" target="_blank" rel="noopener">thaiwater</a> · เรดาร์ <a href="https://www.rainviewer.com/map.html?loc=13.35,101.25,10" target="_blank" rel="noopener">RainViewer</a> · <a href="https://www.thaiwater.net/weather/radar" target="_blank" rel="noopener">เรดาร์ thaiwater</a> · ฝนพยากรณ์ Open-Meteo · แบบจำลองคลองกลางเมือง + จุด A ส่งขึ้นจากเครื่องออฟฟิศ (ทุก ≤3 ชม. หรือเมื่อค่าเปลี่ยน)</p>
+        </div>
+      </details>
+    </section>
+  </div>
+  <p class="small soft" id="foot" style="margin:0;text-align:center">หน้านี้ดึงใหม่เองทุก 10 นาที</p>
 </main>
 
 <script>
@@ -222,107 +381,356 @@ const pad = n => String(n).padStart(2, "0");
 const ymd = d => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
 const fmtT = s => s ? s.slice(8, 10) + "/" + s.slice(5, 7) + " " + s.slice(11, 16) + " น." : "";
 const lvl = (v, y, r) => v == null ? 0 : (r != null && v >= r ? 2 : (y != null && v >= y ? 1 : 0));
-function chip(id, lv, txt) { const e = $(id); e.className = "chip c" + lv; e.textContent = txt || LV_TXT[lv]; }
+const chipCls = { 0: "c0", 1: "c1", 15: "c15", 2: "c2", x: "cx" };
+function chip(id, lv, txt) { const e = $(id); e.className = "chip " + (chipCls[lv] || "cx"); e.textContent = txt || LV_TXT[lv] || "ไม่มีข้อมูล"; }
 async function j(url) { const r = await fetch(url); if (!r.ok) throw new Error(r.status); return r.json(); }
 
-function drawChart(pts) {
-  const W = 340, H = 150, L = 34, R = 8, T = 8, B = 22;
-  const t0 = pts[0].t, t1 = pts[pts.length - 1].t;
-  const vals = pts.map(p => p.v);
-  const lo = Math.floor((Math.min(...vals) - .2) * 2) / 2, hi = Math.max(17.2, Math.ceil((Math.max(...vals) + .1) * 2) / 2);
-  const x = t => L + (t - t0) / (t1 - t0 || 1) * (W - L - R), y = v => T + (hi - v) / (hi - lo) * (H - T - B);
-  let s = `<svg class="chart" viewBox="0 0 ${W} ${H}" role="img">`;
-  for (let v = lo; v <= hi + 1e-9; v += .5) s += `<line x1="${L}" x2="${W - R}" y1="${y(v)}" y2="${y(v)}" stroke="var(--border)"/><text x="${L - 4}" y="${y(v) + 4}" text-anchor="end">${v.toFixed(1)}</text>`;
-  [[16.8, "var(--yellow)", "เฝ้าระวัง"], [17.0, "var(--red)", "อันตราย"]].forEach(([v, c, n]) => {
-    if (v <= hi && v >= lo) s += `<line x1="${L}" x2="${W - R}" y1="${y(v)}" y2="${y(v)}" stroke="${c}" stroke-dasharray="4 3"/><text x="${W - R}" y="${y(v) - 3}" text-anchor="end" style="fill:${c}">${n} ${v}</text>`;
-  });
-  const first = new Date(t0); first.setHours(24, 0, 0, 0);
-  for (let d = first; d.getTime() < t1; d = new Date(d.getTime() + 864e5)) {
-    const xx = x(d.getTime());
-    s += `<line x1="${xx}" x2="${xx}" y1="${T}" y2="${H - B}" stroke="var(--border)"/><text x="${xx + 3}" y="${H - 6}">${d.getDate()}/${d.getMonth() + 1}</text>`;
+/* ── โหมดทดสอบ ?demo=red|yellow|stale — ป้อนค่าปลอมทุกการ์ด (ยกเว้นเรดาร์ที่ยังดึงจริง) + ป้ายม่วงบนสุด ── */
+const DEMO = ["red", "yellow", "stale"].includes(new URLSearchParams(location.search).get("demo")) ? new URLSearchParams(location.search).get("demo") : null;
+if (DEMO) { $("demoBar").hidden = false; $("demoBar").textContent = `ข้อมูลจำลองทดสอบ (${DEMO}) — ไม่ใช่ข้อมูลจริง`; document.title = "[ทดสอบ] น้ำพนัสสด"; }
+const tstr = ms => { const d = new Date(ms); return `${ymd(d)} ${pad(d.getHours())}:${pad(d.getMinutes())}`; };
+
+/* ── เวลา/อายุข้อมูล ── */
+const STALE = { station: 60, dam: 2 * 1440, vg: 6 * 60, A: 2 * 1440 };   // นาที
+const parseT = s => new Date(String(s).slice(0, 16).replace(" ", "T")).getTime();
+function agoTxt(ms) {
+  const m = Math.round((Date.now() - ms) / 6e4);
+  return m < 2 ? "เมื่อกี้" : m < 60 ? `${m} นาทีก่อน` : m < 2880 ? `${Math.round(m / 60)} ชม.ก่อน` : `${Math.round(m / 1440)} วันก่อน`;
+}
+function clock(ms, dateOnly) {
+  const d = new Date(ms), today = new Date().toDateString() === d.toDateString();
+  return dateOnly ? `${d.getDate()}/${d.getMonth() + 1}` : (today ? "" : `${d.getDate()}/${d.getMonth() + 1} `) + `${pad(d.getHours())}:${pad(d.getMinutes())} น.`;
+}
+function setWhen(id, ms, limitMin, dateOnly) {   // คืน true = ข้อมูลล่าช้า
+  const e = $(id), late = Date.now() - ms > limitMin * 6e4;
+  e.textContent = (dateOnly ? "ข้อมูลวันที่ " + clock(ms, true) : "อัปเดต " + clock(ms) + " · " + agoTxt(ms)) + (late ? " · ข้อมูลล่าช้า" : "");
+  e.classList.toggle("late", late);
+  return late;
+}
+const ST_LV = { 0: "0", 1: "1", 1.5: "15", 2: "2" };
+function setCard(id, s) { $(id).dataset.s = s; }   // s = "0" "1" "15" "2" "x"
+
+/* ── ภาพ SVG ── */
+const esc = s => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;");
+const f2 = v => (v < 0 ? "−" : v > 0 ? "+" : "") + Math.abs(v).toFixed(2);
+let uid = 0;
+/* ภาพตัดขวางคลอง: ตลิ่งสองข้าง + น้ำ + เส้นเกณฑ์/อ้างอิง · สเกลคงที่ (lo..hi) */
+function xsec(o) {
+  const W = 340, H = o.h || 210, T = 10, B = H - 8, id = "xs" + (++uid);
+  const y = v => T + (o.hi - v) / (o.hi - o.lo) * (B - T);
+  const by = y(o.bank), bedY = B - 4;
+  // ร่องคลอง: ตลิ่งซ้ายสุด 0-64 แบนที่ระดับตลิ่ง ลาดลงถึงก้นคลอง
+  const land = `M0 ${by} L66 ${by} L118 ${bedY} L222 ${bedY} L274 ${by} L${W} ${by} L${W} ${H} L0 ${H} Z`;
+  let s = `<svg class="viz" viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(o.aria)}">`;
+  if (o.water != null) {
+    const wy = Math.max(T - 2, y(o.water));
+    s += `<rect x="0" y="${wy}" width="${W}" height="${H - wy}" fill="var(--water-fill)"/>`;
+    s += `<line x1="${wy < by ? 0 : 66 + (wy - by) / (bedY - by) * 52}" x2="${wy < by ? W : 274 - (wy - by) / (bedY - by) * 52}" y1="${wy}" y2="${wy}" stroke="var(--water-top)" stroke-width="3"/>`;
   }
+  s += `<path d="${land}" fill="var(--land)" stroke="var(--land-line)" stroke-width="1.5"/>`;
+  for (const b of o.bands || []) {   // แถบอ้างอิง (เช่น สูงสุด +0.30–0.50)
+    s += `<rect x="0" y="${y(b.b)}" width="${W}" height="${y(b.a) - y(b.b)}" fill="var(--ref)" opacity=".16"/>`;
+    s += `<line x1="0" x2="${W}" y1="${y(b.b)}" y2="${y(b.b)}" stroke="var(--ref)" stroke-dasharray="5 4" stroke-width="1.5"/><line x1="0" x2="${W}" y1="${y(b.a)}" y2="${y(b.a)}" stroke="var(--ref)" stroke-dasharray="5 4" stroke-width="1.5"/>`;
+    s += `<text class="lbl" x="${W - 4}" y="${y(b.b) - 4}" text-anchor="end" style="fill:var(--ref)">${esc(b.label)}</text>`;
+  }
+  for (const l of o.lines || []) {
+    const ly = y(l.v);
+    s += `<line x1="0" x2="${W}" y1="${ly}" y2="${ly}" stroke="${l.c}" stroke-width="${l.w || 1.6}"${l.dash ? ` stroke-dasharray="${l.dash}"` : ""}/>`;
+    const left = l.side === "l";
+    s += `<text class="lbl${l.strong ? " strong" : ""}" x="${left ? 4 : W - 4}" y="${ly + (l.dy || -4)}" text-anchor="${left ? "start" : "end"}" style="fill:${l.tc || l.c}">${esc(l.label)}</text>`;
+  }
+  if (o.water != null) {
+    const wy = Math.max(T + 12, y(o.water));
+    const over = o.water > o.bank;
+    s += `<text class="lbl strong n" x="${over ? 8 : 170}" y="${over ? Math.min(wy + 16, by - 3) : Math.max(wy + 16, (wy + bedY) / 2 + 5)}" text-anchor="${over ? "start" : "middle"}" style="fill:var(--water);font-size:12.5px">${esc(o.waterLabel)}</text>`;
+  }
+  return s + "</svg>";
+}
+/* แถบแนวนอน: โซนสี / แถบน้ำ / เส้นเกณฑ์ / เส้นอ้างอิง ก.ย.69 / หมุดตอนนี้-สูงสุด */
+function hbar(o) {
+  const W = 340, L = 6, R = 6, ty = o.ty || 34, th = o.th || 18, H = o.h || 78, id = "hb" + (++uid);
+  const x = v => L + (Math.max(o.min, Math.min(o.max, v)) - o.min) / (o.max - o.min) * (W - L - R);
+  const anc = (xx, w = 60) => xx < L + w / 2 ? ["start", Math.max(L, xx - 6)] : xx > W - R - w / 2 ? ["end", Math.min(W - R, xx + 6)] : ["middle", xx];
+  let s = `<svg class="viz" viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(o.aria)}"><defs><clipPath id="${id}"><rect x="${L}" y="${ty}" width="${W - L - R}" height="${th}" rx="${th / 2}"/></clipPath></defs>`;
+  s += `<rect x="${L}" y="${ty}" width="${W - L - R}" height="${th}" rx="${th / 2}" fill="var(--track)"/><g clip-path="url(#${id})">`;
+  for (const z of o.zones || []) {
+    s += `<rect x="${x(z.a)}" y="${ty}" width="${x(z.b) - x(z.a)}" height="${th}" fill="${z.c}"/>`;
+    if (z.label && x(z.b) - x(z.a) > 40) s += `<text x="${(x(z.a) + x(z.b)) / 2}" y="${ty + th / 2 + 4}" text-anchor="middle" style="fill:var(--ink);font-size:10.5px;font-weight:600">${esc(z.label)}</text>`;
+  }
+  if (o.fill != null) s += `<rect x="${L}" y="${ty}" width="${x(o.fill) - L}" height="${th}" fill="${o.fillC || "var(--water)"}"/>`;
+  s += `</g>`;
+  for (const t of o.ticks || []) {
+    const xx = x(t.v);
+    s += `<line x1="${xx}" x2="${xx}" y1="${ty - 3}" y2="${ty + th + 3}" stroke="var(--surface)" stroke-width="5"/><line x1="${xx}" x2="${xx}" y1="${ty - 3}" y2="${ty + th + 3}" stroke="${t.c}" stroke-width="2.5"${t.dash ? ` stroke-dasharray="${t.dash}"` : ""}/>`;
+    if (t.label) { const [a, xa] = anc(xx, t.lw || 70); s += `<text class="lbl" x="${xa}" y="${ty + th + 15 + (t.dy || 0)}" text-anchor="${t.anchor || a}" style="fill:${t.tc || t.c};font-weight:600">${esc(t.label)}</text>`; }
+  }
+  for (const r of o.refs || []) {
+    const xx = x(r.v);
+    s += `<line x1="${xx}" x2="${xx}" y1="${ty - 12}" y2="${ty + th + 4}" stroke="var(--ref)" stroke-width="2" stroke-dasharray="4 3"/>`;
+    const [a, xa] = anc(xx, 80); s += `<text class="lbl" x="${xa}" y="${r.below ? ty + th + 29 : ty - 15}" text-anchor="${r.anchor || a}" style="fill:var(--ref);font-weight:600">${esc(r.label)}</text>`;
+  }
+  for (const m of o.marks || []) {
+    const xx = x(m.v), up = m.pos !== "below";
+    if (up) s += `<path d="M${xx - 7} ${ty - 10} L${xx + 7} ${ty - 10} L${xx} ${ty - 1} Z" fill="${m.c || "var(--ink)"}" stroke="var(--surface)" stroke-width="1.5"/>`;
+    else s += `<path d="M${xx - 7} ${ty + th + 10} L${xx + 7} ${ty + th + 10} L${xx} ${ty + th + 1} Z" fill="${m.hollow ? "var(--surface)" : (m.c || "var(--ink)")}" stroke="${m.c || "var(--ink)"}" stroke-width="2"/>`;
+    const [a, xa] = anc(xx, m.lw || 110);
+    s += `<text class="lbl strong" x="${xa}" y="${up ? ty - 14 : ty + th + (m.dy || 24)}" text-anchor="${a}" style="fill:${m.tc || "var(--ink)"};font-size:12px">${esc(m.label)}</text>`;
+  }
+  return s + "</svg>";
+}
+
+/* ── ทะเบียนตัวชี้วัด (ใช้ทำป้ายรวม + เรียงการ์ด) ──
+   s = สถานะแสดงผล "0" "1" "15" "2" "x" · lv = 0/1/2 เพื่อรวม (null = ล่าช้า/ไม่มี ไม่นับ) · score 0..1+ = ใกล้เกณฑ์อันตรายแค่ไหน */
+const ITEMS = {};
+function item(k, o) { ITEMS[k] = Object.assign({ k }, o); }
+const scoreOf = (v, floor, red) => Math.max(0, (v - floor) / (red - floor));
+
+/* ════════ จุด A + คลองกลางเมือง: จาก status.json (ส่งขึ้นจากเครื่องออฟฟิศ) ════════ */
+async function loadStatus() {
+  if (DEMO) {
+    const h = Date.now() - (DEMO === "stale" ? 8 * 36e5 : 15 * 6e4);
+    const peak = DEMO === "red" ? 88 : DEMO === "yellow" ? 46 : 24, at = DEMO === "red" ? 20 : 30, now = DEMO === "red" ? 58 : DEMO === "yellow" ? 30 : 20;
+    const series = Array.from({ length: 73 }, (_, i) => +(i <= at ? now + (peak - now) * Math.sin(i / at * Math.PI / 2) : peak - (peak - now * .6) * (i - at) / (72 - at)).toFixed(1));
+    const aBelow = DEMO === "red" ? -0.25 : DEMO === "yellow" ? 0.35 : 1.5, aT = Date.now() - (DEMO === "stale" ? 3 * 864e5 : 40 * 6e4);
+    return { generated: new Date(h).toISOString(), vg: { index_now: now, index_max: peak, index_hi: peak + 9, peak_h: at, level: DEMO === "red" ? 3 : DEMO === "yellow" ? 1 : 0, series, thresholds: { y: 35, o: 55, r: 75 } },
+      point_A: { latest: { t: tstr(aT), below_ref_m: aBelow }, history: [] } };
+  }
+  return j("status.json?t=" + Date.now());
+}
+function noData(viz, say, msg) { $(viz).innerHTML = `<div class="empty">${esc(msg)}</div>`; $(say).textContent = ""; }
+
+function renderA(st) {
+  const a = st && st.point_A && st.point_A.latest;
+  if (!a) { setCard("cA", "x"); chip("aChip", "x", "ไม่มีข้อมูล"); $("aBig").textContent = "–"; $("aWhen").textContent = ""; noData("aViz", "aSay", "ไม่มีข้อมูลจุด A (ยังไม่มีค่า หรืออ่าน status.json ไม่ได้)"); item("A", { name: "จุด A", short: "ไม่มีข้อมูล", s: "x", lv: null, card: "cA" }); return; }
+  const below = +a.below_ref_m, e = -below, t = parseT(a.t), late = setWhen("aWhen", t, STALE.A);
+  const lv = below <= 0 ? 2 : below <= 0.5 ? 1 : 0;
+  $("aBig").textContent = below >= 0 ? below.toFixed(2) : "+" + (-below).toFixed(2);
+  $("aUnit").textContent = below >= 0 ? "ม. ต่ำกว่าตลิ่ง" : "ม. ล้นตลิ่ง";
+  const lo = Math.min(-2.0, e - 0.35), hi = Math.max(0.75, e + 0.25);
+  $("aViz").innerHTML = xsec({ lo, hi, bank: 0, water: e, aria: `ภาพตัดขวางคลองจุด A ผิวน้ำ ${f2(e)} ม. เทียบตลิ่ง`,
+    waterLabel: `ตอนนี้ ${f2(e)} ม.`,
+    bands: [{ a: 0.30, b: 0.50, label: "ก.ย.69 สูงสุด +0.30–0.50 (27–29 ก.ย.)" }],
+    lines: [
+      { v: 0.10, c: "var(--ref)", dash: "5 4", label: "เริ่มล้น +0.10 · 26 ก.ย. 23:00" },
+      { v: -0.10, c: "var(--ref)", dash: "5 4", label: "25 ก.ย. −0.10 (วันก่อนล้น)", dy: 13 },
+      { v: 0, c: "var(--ink)", w: 2.2, label: "ตลิ่ง 0.00", side: "l", strong: true, tc: "var(--ink)", dy: 14 },
+    ] });
+  const gap = below - 0.10;
+  $("aSay").innerHTML = below <= 0 ? `น้ำล้นตลิ่งแล้ว <b>${(-below * 100).toFixed(0)} ซม.</b>` + (e >= 0.30 ? " · ถึงระดับสูงสุด ก.ย.69 แล้ว" : ` · ต่ำกว่าระดับสูงสุด ก.ย.69 อีก ${((0.30 - e) * 100).toFixed(0)} ซม.`)
+    : gap > 0 ? `ต่ำกว่าระดับก่อนล้น (25 ก.ย.) อีก <b>${gap.toFixed(2)} ม.</b>` : `ถึงระดับวันก่อนล้น (25 ก.ย.) แล้ว · อีก <b>${(below * 100).toFixed(0)} ซม.</b> ถึงตลิ่ง`;
+  let note = `อ่านเมื่อ ${clock(t)}` + (a.note ? ` · ${a.note}` : "");
+  if (late) note = `<div class="late-box">ค่าเก่า ${agoTxt(t)} — ส่งค่าใหม่ได้ (บอกอีหนู "A 1.2")</div>`;
+  else note += ` · ส่งค่าใหม่: บอกอีหนู "A 1.2" (ติดลบ = ล้นตลิ่ง)`;
+  $("aNote").innerHTML = note;
+  const s = late ? "x" : ST_LV[lv];
+  setCard("cA", s); chip("aChip", late ? "x" : lv, late ? "ค่าเก่า" : ["ปลอดภัย", "เฝ้าระวัง", "อันตราย"][lv]);
+  item("A", { name: "จุด A", mini: (below >= 0 ? "−" : "+") + Math.abs(below).toFixed(2) + " ม.", short: below >= 0 ? `ต่ำกว่าตลิ่ง ${below.toFixed(2)} ม.` : `ล้น ${(-below).toFixed(2)} ม.`, s, lv: late ? null : lv, card: "cA",
+    score: scoreOf(3.0 - below, 0, 3.0), gap: below <= 0 ? `ล้นตลิ่ง ${(-below * 100).toFixed(0)} ซม.` : lv ? `อีก ${(below * 100).toFixed(0)} ซม. ถึงตลิ่ง` : `อีก ${(below - 0.5).toFixed(2)} ม. ถึงเฝ้าระวัง` });
+}
+
+function vgSpark(v) {
+  const ser = v.series; if (!ser || ser.length < 2) return "";
+  const W = 340, H = 128, L = 30, R = 8, T = 10, B = 22, th = v.thresholds || { y: 35, o: 55, r: 75 };
+  const hi = Math.max(110, Math.ceil(Math.max(...ser) / 10) * 10 + 10), n = ser.length - 1;
+  const x = i => L + i / n * (W - L - R), y = val => T + (hi - val) / hi * (H - T - B);
+  let s = `<svg class="viz chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="ดัชนีคลองกลางเมือง 72 ชม. ข้างหน้า">`;
+  [[th.y, th.o, "var(--zone-y)"], [th.o, th.r, "var(--zone-o)"], [th.r, hi, "var(--zone-r)"]].forEach(([a, b, c]) => s += `<rect x="${L}" y="${y(b)}" width="${W - L - R}" height="${y(a) - y(b)}" fill="${c}" opacity=".55"/>`);
+  [0, 50, 100].forEach(g => s += `<text x="${L - 4}" y="${y(g) + 4}" text-anchor="end">${g}</text>`);
+  s += `<line x1="${L}" x2="${W - R}" y1="${y(100)}" y2="${y(100)}" stroke="var(--ref)" stroke-dasharray="5 4" stroke-width="1.5"/><text class="lbl" x="${W - R - 2}" y="${y(100) - 4}" text-anchor="end" style="fill:var(--ref);font-weight:600">ก.ย.69 = 100%</text>`;
+  [0, 24, 48, 72].filter(h => h <= n).forEach(h => s += `<line x1="${x(h)}" x2="${x(h)}" y1="${T}" y2="${H - B}" stroke="var(--border)"/><text x="${x(h)}" y="${H - 6}" text-anchor="${h ? (h === 72 ? "end" : "middle") : "start"}">${h ? "+" + h + " ชม." : "ตอนนี้"}</text>`);
+  const line = ser.map((p, i) => (i ? "L" : "M") + x(i).toFixed(1) + " " + y(p).toFixed(1)).join("");
+  s += `<path d="${line}L${x(n)} ${y(0)}L${x(0)} ${y(0)}Z" fill="var(--water-fill)"/><path d="${line}" fill="none" stroke="var(--water)" stroke-width="2.2"/>`;
+  const pi = ser.indexOf(Math.max(...ser));
+  s += `<circle cx="${x(pi)}" cy="${y(ser[pi])}" r="4.5" fill="var(--surface)" stroke="var(--ink)" stroke-width="2"/>`;
+  s += `<text class="lbl strong" x="${Math.min(x(pi), W - 60)}" y="${y(ser[pi]) - 8}" text-anchor="middle">สูงสุด ${ser[pi].toFixed(0)}%</text>`;
+  return `<div class="small soft" style="margin-top:10px;font-weight:600">72 ชม. ข้างหน้า (ค่ากลางของแบบจำลองฝนทุกเจ้า)</div>` + s + "</svg>";
+}
+function renderVg(st) {
+  const v = st && st.vg;
+  if (!v) { setCard("cVg", "x"); chip("vgChip", "x", "ไม่มีข้อมูล"); $("vgBig").textContent = "–"; $("vgWhen").textContent = ""; $("vgSpark").innerHTML = ""; noData("vgViz", "vgSay", "ไม่มีข้อมูลแบบจำลอง (เครื่องออฟฟิศยังไม่ส่ง หรืออ่าน status.json ไม่ได้)"); item("vg", { name: "คลองกลางเมือง", short: "ไม่มีข้อมูล", s: "x", lv: null, card: "cVg" }); return; }
+  const th = v.thresholds || { y: 35, o: 55, r: 75 }, gen = new Date(st.generated).getTime(), late = setWhen("vgWhen", gen, STALE.vg);
+  const now = v.index_now != null ? v.index_now : (v.series ? v.series[0] : null), mx = v.index_max;
+  const dl = v.level, lv = { 0: 0, 1: 1, 2: 1, 3: 2 }[dl] ?? 0, s = late ? "x" : ["0", "1", "15", "2"][dl] || "0";
+  $("vgBig").textContent = now != null ? now.toFixed(0) : "–";
+  const top = Math.max(120, Math.ceil(((v.index_hi || mx) + 10) / 10) * 10), close = now != null && Math.abs(mx - now) < 4;
+  $("vgViz").innerHTML = hbar({ min: 0, max: top, h: 104, ty: 36, th: 20, aria: `ดัชนีคลองกลางเมือง ตอนนี้ ${now}% สูงสุด 72 ชม. ${mx}%`,
+    zones: [{ a: 0, b: th.y, c: "var(--zone-g)", label: "ปลอดภัย" }, { a: th.y, b: th.o, c: "var(--zone-y)", label: "เฝ้าระวัง" }, { a: th.o, b: th.r, c: "var(--zone-o)", label: "ใกล้อันตราย" }, { a: th.r, b: top, c: "var(--zone-r)", label: "อันตราย" }],
+    refs: [{ v: 100, label: "ก.ย.69 = 100" }],
+    ticks: [th.y, th.o, th.r].map(t => ({ v: t, c: "var(--surface)", label: String(t), tc: "var(--ink-soft)", lw: 20 })),
+    marks: [now != null && !close ? { v: now, label: `ตอนนี้ ${now.toFixed(0)}%` } : null,
+      { v: mx, pos: close ? "above" : "below", hollow: true, dy: 36, label: close ? `ตอนนี้ ${now.toFixed(0)}% · สูงสุด 72 ชม. ${mx.toFixed(0)}%` : `สูงสุด 72 ชม. ${mx.toFixed(0)}%`, lw: close ? 220 : 130 }].filter(Boolean) });
+  const nextTh = mx < th.y ? [th.y, "เฝ้าระวัง"] : mx < th.o ? [th.o, "ใกล้อันตราย"] : mx < th.r ? [th.r, "อันตราย"] : null;
+  const ph = v.peak_h;
+  $("vgSay").innerHTML = (ph != null && ph > 0 ? `ขึ้นถึงยอด <b>${mx.toFixed(0)}%</b> ในอีก ~<b>${ph}</b> ชม.` : `ยอดอยู่ที่ตอนนี้ <b>${mx.toFixed(0)}%</b> (กำลังลด/ทรงตัว)`)
+    + (nextTh ? ` · ยังห่างเกณฑ์${nextTh[1]} ${(nextTh[0] - mx).toFixed(0)}%` : " · เกินเกณฑ์อันตรายแล้ว")
+    + (v.index_hi != null && v.index_hi - mx >= 5 ? `<br><span class="soft" style="font-weight:400">ถ้าฝนตกหนักกว่าคาด อาจถึง ${v.index_hi.toFixed(0)}%</span>` : "");
+  $("vgSpark").innerHTML = vgSpark(v);
+  if (late) $("vgSay").innerHTML += `<div class="late-box">ข้อมูลล่าช้า (${agoTxt(gen)}) — เครื่องออฟฟิศอาจปิด/เน็ตหลุด ไม่นับในสถานะรวม</div>`;
+  setCard("cVg", s); chip("vgChip", late ? "x" : +s || 0, late ? "ข้อมูลล่าช้า" : ["ปลอดภัย", "เฝ้าระวัง", "ใกล้อันตราย", "อันตราย"][dl]);
+  if (!late) $("vgChip").className = "chip " + chipCls[s];
+  item("vg", { name: "คลองกลางเมือง", mname: "กลางเมือง", mini: `${mx.toFixed(0)}%`, short: `${mx.toFixed(0)}% (สูงสุด 72 ชม.)`, s, lv: late ? null : lv, card: "cVg", score: scoreOf(mx, 0, th.r),
+    gap: nextTh ? `อีก ${(nextTh[0] - mx).toFixed(0)}% ถึง${nextTh[1]}` : `เกินอันตราย ${(mx - th.r).toFixed(0)}%` });
+}
+
+/* ════════ คลองหลวง บ้านท่าบุญมี ════════ */
+function drawChart(pts) {   // สเกลคงที่ 15.6–17.4 ม. (ขยายเฉพาะเมื่อค่าเกินกรอบ) — ไม่ให้ขึ้น 5 ซม. ดูเหมือนพุ่ง
+  const W = 340, H = 160, L = 36, R = 8, T = 10, B = 22;
+  const t0 = pts[0].t, t1 = pts[pts.length - 1].t, vals = pts.map(p => p.v);
+  const lo = Math.min(15.6, Math.floor((Math.min(...vals) - .1) * 2) / 2), hi = Math.max(17.4, Math.ceil((Math.max(...vals) + .1) * 2) / 2);
+  const x = t => L + (t - t0) / (t1 - t0 || 1) * (W - L - R), y = v => T + (hi - v) / (hi - lo) * (H - T - B);
+  let s = `<svg class="chart viz" viewBox="0 0 ${W} ${H}" role="img">`;
+  for (let v = Math.ceil(lo * 2) / 2; v <= hi + 1e-9; v += .5) s += `<line x1="${L}" x2="${W - R}" y1="${y(v)}" y2="${y(v)}" stroke="var(--border)"/><text x="${L - 4}" y="${y(v) + 4}" text-anchor="end">${v.toFixed(1)}</text>`;
+  s += `<rect x="${L}" y="${y(hi)}" width="${W - L - R}" height="${y(17.0) - y(hi)}" fill="var(--zone-r)" opacity=".45"/><rect x="${L}" y="${y(17.0)}" width="${W - L - R}" height="${y(16.8) - y(17.0)}" fill="var(--zone-y)" opacity=".6"/>`;
+  s += `<line x1="${L}" x2="${W - R}" y1="${y(16.8)}" y2="${y(16.8)}" stroke="var(--yellow)" stroke-width="1.5"/><text class="lbl" x="${W - R - 2}" y="${y(16.8) + 12}" text-anchor="end" style="fill:var(--yellow);font-weight:600">เฝ้าระวัง 16.8</text>`;
+  s += `<line x1="${L}" x2="${W - R}" y1="${y(17.0)}" y2="${y(17.0)}" stroke="var(--red)" stroke-width="1.5"/><text class="lbl" x="${W - R - 2}" y="${y(17.0) - 10}" text-anchor="end" style="fill:var(--red);font-weight:600">อันตราย 17.0</text>`;
+  s += `<line x1="${L}" x2="${W - R}" y1="${y(17.03)}" y2="${y(17.03)}" stroke="var(--ref)" stroke-dasharray="5 4" stroke-width="1.5"/><text class="lbl" x="${L + 4}" y="${y(17.03) - 4}" style="fill:var(--ref);font-weight:600">ก.ย.69 17.03</text>`;
+  const first = new Date(t0); first.setHours(24, 0, 0, 0);
+  for (let d = first; d.getTime() < t1; d = new Date(d.getTime() + 864e5)) { const xx = x(d.getTime()); s += `<line x1="${xx}" x2="${xx}" y1="${T}" y2="${H - B}" stroke="var(--border)"/><text x="${xx + 3}" y="${H - 6}">${d.getDate()}/${d.getMonth() + 1}</text>`; }
   const line = pts.map((p, i) => (i ? "L" : "M") + x(p.t).toFixed(1) + " " + y(p.v).toFixed(1)).join("");
-  s += `<path d="${line}L${x(t1)} ${H - B}L${x(t0)} ${H - B}Z" fill="var(--water-fill)"/><path d="${line}" fill="none" stroke="var(--water)" stroke-width="2"/>`;
-  const e = pts[pts.length - 1]; s += `<circle cx="${x(e.t)}" cy="${y(e.v)}" r="4" fill="var(--water)" stroke="var(--surface)" stroke-width="2"/></svg>`;
+  s += `<path d="${line}L${x(t1)} ${H - B}L${x(t0)} ${H - B}Z" fill="var(--water-fill)"/><path d="${line}" fill="none" stroke="var(--water)" stroke-width="2.2"/>`;
+  const e = pts[pts.length - 1]; s += `<circle cx="${x(e.t)}" cy="${y(e.v)}" r="4.5" fill="var(--water)" stroke="var(--surface)" stroke-width="2"/></svg>`;
   $("kgtChart").innerHTML = s;
 }
-
-async function loadKgt() {
+async function fetchKgt() {
+  if (DEMO) {
+    const end = Date.now() - (DEMO === "stale" ? 3 * 36e5 : 20 * 6e4), a = 16.15, b = DEMO === "red" ? 17.12 : DEMO === "yellow" ? 16.88 : 16.3, qb = DEMO === "red" ? 43 : DEMO === "yellow" ? 33 : 22;
+    return Array.from({ length: 73 }, (_, i) => { const t = end - (72 - i) * 36e5, f = Math.max(0, (i - 30) / 42) ** 1.4; return { t, v: +(a + (b - a) * f).toFixed(2), q: +(15 + (qb - 15) * f).toFixed(1), s: tstr(t) }; });
+  }
   const now = new Date(), st = new Date(now - 3 * 864e5);
   const d = await j(`${API}/public/waterlevel_graph?station_type=tele_waterlevel&station_id=${KGT}&start_date=${ymd(st)}&end_date=${ymd(now)}%2023:59`);
-  const pts = d.data.graph_data.filter(p => p.value != null).map(p => ({ t: new Date(p.datetime.replace(" ", "T")).getTime(), v: p.value, q: p.discharge, s: p.datetime }));
-  const e = pts[pts.length - 1];
-  const p3 = pts.filter(p => e.t - p.t >= 3 * 36e5).pop();
-  const d3 = p3 ? e.v - p3.v : null;
-  const lv = Math.max(lvl(e.v, 16.8, 17.0), lvl(e.q, 32, 40));
+  return d.data.graph_data.filter(p => p.value != null).map(p => ({ t: new Date(p.datetime.replace(" ", "T")).getTime(), v: p.value, q: p.discharge, s: p.datetime }));
+}
+async function loadKgt() {
+  const pts = await fetchKgt(), e = pts[pts.length - 1];
+  const p3 = pts.filter(p => e.t - p.t >= 3 * 36e5).pop(), d3 = p3 ? e.v - p3.v : null;
+  const lvW = lvl(e.v, 16.8, 17.0), lvQ = lvl(e.q, 32, 40), lv = Math.max(lvW, lvQ), late = setWhen("kgtWhen", e.t, STALE.station);
   $("kgtWl").textContent = e.v.toFixed(2);
-  $("kgtBank").textContent = (KGT_BANK - e.v).toFixed(2);
+  if (d3 != null) { $("kgtD3").hidden = false; $("kgtD3").textContent = (Math.abs(d3) < .005 ? "ทรงตัว" : (d3 > 0 ? "▲ ขึ้น " : "▼ ลง ") + Math.abs(d3 * 100).toFixed(0) + " ซม.") + " ใน 3 ชม."; }
+  const lo = Math.min(15.4, e.v - .3), hi = 18.65;
+  $("kgtViz").innerHTML = xsec({ lo, hi, bank: KGT_BANK, water: e.v, aria: `ภาพตัดขวางคลองหลวง ระดับ ${e.v.toFixed(2)} ม. เทียบเกณฑ์`, waterLabel: `ตอนนี้ ${e.v.toFixed(2)}`,
+    lines: [
+      { v: KGT_BANK, c: "var(--ink)", w: 2.2, label: `ตลิ่ง ${KGT_BANK}`, side: "l", strong: true, tc: "var(--ink)" },
+      { v: 17.03, c: "var(--ref)", dash: "5 4", label: "ก.ย.69 17.03", side: "l" },
+      { v: 17.0, c: "var(--red)", w: 2, label: "อันตราย 17.00", dy: -4 },
+      { v: 16.8, c: "var(--yellow)", w: 2, label: "เฝ้าระวัง 16.80", dy: 13 },
+    ] });
+  const parts = [];
+  if (e.v < 16.8) parts.push(`ห่างเฝ้าระวัง <b>${(16.8 - e.v).toFixed(2)}</b> ม.`);
+  if (e.v < 17.0) parts.push(`ห่างอันตราย <b>${(17.0 - e.v).toFixed(2)}</b> ม.`); else parts.push(`เกินอันตราย <b>${(e.v - 17.0).toFixed(2)}</b> ม.` + (e.v >= 17.03 ? " · สูงกว่า ก.ย.69 แล้ว" : ""));
+  parts.push(`ต่ำกว่าตลิ่ง ${(KGT_BANK - e.v).toFixed(2)} ม.`);
+  $("kgtSay").innerHTML = parts.join(" · ") + (late ? `<div class="late-box">ข้อมูลล่าช้า (${agoTxt(e.t)}) — สถานีไม่ส่งค่า ไม่นับในสถานะรวม</div>` : "");
   $("kgtQ").textContent = e.q != null ? e.q.toFixed(1) : "–";
-  $("kgtD3").textContent = d3 == null ? "–" : (d3 >= 0 ? "+" : "−") + Math.abs(d3 * 100).toFixed(0) + " ซม.";
-  const age = (Date.now() - e.t) / 36e5;
-  $("kgtTime").textContent = "วัดล่าสุด " + fmtT(e.s) + (age > 3 ? ` · ⚠️ ข้อมูลขาดมา ${age.toFixed(0)} ชม.` : "") + " · ตลิ่งต่ำสุด 18.37 ม.";
-  chip("kgtChip", lv);
+  $("kgtQViz").innerHTML = e.q == null ? "" : hbar({ min: 0, max: 50, fill: e.q, fillC: ["var(--water)", "var(--yellow)", "var(--red)"][lvQ], h: 86, ty: 30, th: 14, aria: `น้ำไหล ${e.q} ลบ.ม./วิ`,
+    ticks: [{ v: 32, c: "var(--yellow)", label: "เฝ้าระวัง 32", anchor: "end", lw: 80 }, { v: 40, c: "var(--red)", label: "อันตราย 40 = ก.ย.69", anchor: "end", lw: 110, dy: 14 }],
+    marks: [{ v: e.q, label: `${e.q.toFixed(0)}`, lw: 30 }] });
   drawChart(pts);
-  return { lv, txt: `คลองหลวง ${e.v.toFixed(2)} ม.`, d3 };
+  const s = late ? "x" : ST_LV[lv];
+  setCard("cKgt", s); chip("kgtChip", late ? "x" : lv, late ? "ข้อมูลล่าช้า" : ["ปลอดภัย", "เฝ้าระวัง", "อันตราย"][lv]);
+  const sW = scoreOf(e.v, 15.5, 17.0), sQ = e.q != null ? scoreOf(e.q, 0, 40) : 0, byQ = sQ > sW;
+  const gapW = e.v < 16.8 ? `ห่างเฝ้าระวัง ${(16.8 - e.v).toFixed(2)} ม.` : e.v < 17 ? `ห่างอันตราย ${(17 - e.v).toFixed(2)} ม.` : `เกินอันตราย ${(e.v - 17).toFixed(2)} ม.`;
+  const gapQ = e.q < 32 ? `น้ำไหล ${e.q.toFixed(0)} · อีก ${(32 - e.q).toFixed(0)} ถึงเฝ้าระวัง` : e.q < 40 ? `น้ำไหล ${e.q.toFixed(0)} · อีก ${(40 - e.q).toFixed(0)} ถึงอันตราย` : `น้ำไหล ${e.q.toFixed(0)} เกินอันตราย`;
+  item("kgt", { name: "คลองหลวง", mini: e.v.toFixed(2), short: `${e.v.toFixed(2)} ม.`, s, lv: late ? null : lv, card: "cKgt", score: Math.max(sW, sQ), gap: byQ ? gapQ + " ลบ.ม./วิ" : gapW });
 }
 
+/* ════════ อ่าง 2 ใบ ════════ */
+async function fetchDams() {
+  if (DEMO) {
+    const dd = ymd(new Date(Date.now() - (DEMO === "stale" ? 4 * 864e5 : 0)));
+    const bbp = DEMO === "red" ? 96.2 : DEMO === "yellow" ? 91.0 : 87.2, rel = DEMO === "red" ? 2.3 : DEMO === "yellow" ? 1.3 : 0.96;
+    return [{ dam: { id: DAM_BB, normal_storage: 12.4 }, dam_date: dd, dam_storage: (12.4 * bbp / 100).toFixed(2), dam_storage_percent: bbp, dam_inflow: 0.31, dam_released: 0.12 },
+      { dam: { id: DAM_KL, normal_storage: 98 }, dam_date: dd, dam_storage: 130, dam_storage_percent: DEMO === "red" ? 141 : 132.7, dam_inflow: 1.4, dam_released: rel }];
+  }
+  const d = await j(`${API}/analyst/dam`); let m = d.data.dam_medium; return m.data || m;
+}
 async function loadDams() {
-  const d = await j(`${API}/analyst/dam`);
-  let m = d.data.dam_medium; m = m.data || m;
+  const m = await fetchDams();
   const pick = id => m.filter(x => x.dam.id === id && x.dam_storage != null).sort((a, b) => a.dam_date < b.dam_date ? 1 : -1)[0];
-  const bb = pick(DAM_BB), kl = pick(DAM_KL), out = [];
+  const bb = pick(DAM_BB), kl = pick(DAM_KL);
   if (bb) {
-    const p = +bb.dam_storage_percent, st = +bb.dam_storage, room = st / p * 100 - st;
+    const p = +bb.dam_storage_percent, st = +bb.dam_storage, room = st / p * 100 - st, t = parseT(bb.dam_date + " 00:00");
     const net = (+bb.dam_inflow || 0) - (+bb.dam_released || 0), days = room > 0 && net > 0 ? room / net : null;
     let lv = lvl(p, 90, 95);
-    if (room <= 0 || (days != null && days <= 5)) lv = Math.max(lv, 1);   // ล้นแล้ว/จะเต็มใน 5 วัน = เฝ้าระวัง
-    $("bbFull").textContent = room <= 0 ? "⚠️ เต็มแล้ว น้ำล้นทางระบาย (ไหลผ่านตะวันตกของเมือง)"
-      : days != null ? `ว่างอีก ${room.toFixed(2)} ล้าน ลบ.ม. · ถ้าน้ำเข้าเท่านี้ เต็มใน ~${Math.round(days)} วัน`
-      : `ว่างอีก ${room.toFixed(2)} ล้าน ลบ.ม. · น้ำออก ≥ เข้า ยังไม่เต็ม`;
-    $("bbPct").textContent = p.toFixed(1); $("bbBar").style.width = Math.min(p / 1.4, 100) + "%";
-    $("bbInfo").innerHTML = `${bb.dam_storage} / ${bb.dam.normal_storage} ล้าน ลบ.ม. · เข้า <span class="num">${bb.dam_inflow ?? "–"}</span> ออก <span class="num">${bb.dam_released ?? "–"}</span> ล้าน/วัน · ${bb.dam_date.slice(8)}/${bb.dam_date.slice(5, 7)}`;
-    chip("bbChip", lv); out.push({ lv, txt: `บ้านบึง ${p.toFixed(0)}%` });
-  }
+    if (room <= 0 || (days != null && days <= 5)) lv = Math.max(lv, 1);
+    const late = Date.now() - t > STALE.dam * 6e4 + 864e5;   // ข้อมูลรายวัน: เกิน 2 วันนับจากสิ้นวันที่รายงาน
+    setWhen("bbWhen", t, 1e9, true); if (late) { $("bbWhen").textContent += " · ข้อมูลล่าช้า"; $("bbWhen").classList.add("late"); }
+    $("bbPct").textContent = p.toFixed(1);
+    const fb = $("bbFull"); fb.hidden = false;
+    fb.textContent = room <= 0 ? "เต็มแล้ว ล้นทางระบาย" : days != null ? `เต็มใน ~${Math.round(days)} วัน` : "น้ำออก ≥ เข้า ยังไม่เต็ม";
+    $("bbViz").innerHTML = hbar({ min: 0, max: 100, fill: Math.min(p, 100), fillC: ["var(--water)", "var(--yellow)", "var(--red)"][lvl(p, 90, 95)], h: 88, ty: 32, th: 18, aria: `อ่างบ้านบึง ${p.toFixed(1)}%`,
+      ticks: [{ v: 90, c: "var(--yellow)", label: "เฝ้าระวัง 90", anchor: "end", lw: 90 }, { v: 95, c: "var(--red)", label: "อันตราย 95", anchor: "end", lw: 70, dy: 14 }],
+      marks: [{ v: Math.min(p, 100), label: `ตอนนี้ ${p.toFixed(1)}%`, lw: 110 }] });
+    $("bbSay").innerHTML = p < 90 ? `อีก <b>${(90 - p).toFixed(1)}%</b> ถึงเฝ้าระวัง · <b>${(95 - p).toFixed(1)}%</b> ถึงอันตราย` : p < 95 ? `เกินเฝ้าระวังแล้ว · อีก <b>${(95 - p).toFixed(1)}%</b> ถึงอันตราย` : `เกินระดับอันตราย (95%) แล้ว`;
+    if (late) $("bbSay").innerHTML += `<div class="late-box">ข้อมูลล่าช้า — กรมชลฯ ยังไม่อัปเดต ไม่นับในสถานะรวม</div>`;
+    $("bbInfo").innerHTML = `${bb.dam_storage} / ${bb.dam.normal_storage} ล้าน ลบ.ม. · ว่างอีก ${Math.max(0, room).toFixed(2)} ล้าน · เข้า <span class="num">${bb.dam_inflow ?? "–"}</span> ออก <span class="num">${bb.dam_released ?? "–"}</span> ล้าน/วัน`;
+    const s = late ? "x" : ST_LV[lv];
+    setCard("cBb", s); chip("bbChip", late ? "x" : lv, late ? "ข้อมูลล่าช้า" : ["ปลอดภัย", "เฝ้าระวัง", "อันตราย"][lv]);
+    item("bb", { name: "อ่างบ้านบึง", short: `${p.toFixed(0)}%`, s, lv: late ? null : lv, card: "cBb", score: scoreOf(p, 60, 95),
+      gap: p < 90 ? `อีก ${(90 - p).toFixed(1)}% ถึงเฝ้าระวัง` + (days != null ? ` · เต็มใน ~${Math.round(days)} วัน` : "") : p < 95 ? `อีก ${(95 - p).toFixed(1)}% ถึงอันตราย` : "เกินอันตราย" });
+  } else { setCard("cBb", "x"); chip("bbChip", "x", "ไม่มีข้อมูล"); noData("bbViz", "bbSay", "ไม่มีข้อมูลอ่างบ้านบึง"); item("bb", { name: "อ่างบ้านบึง", short: "ไม่มีข้อมูล", s: "x", lv: null, card: "cBb" }); }
   if (kl) {
-    const p = +kl.dam_storage_percent, lv = lvl(kl.dam_released, null, 2.0);
-    $("klPct").textContent = p.toFixed(1); $("klBar").style.width = Math.min(p / 1.4, 100) + "%";
-    $("klInfo").innerHTML = `${kl.dam_storage} ล้าน ลบ.ม. · เข้า <span class="num">${kl.dam_inflow ?? "–"}</span> ระบาย <span class="num">${kl.dam_released ?? "–"}</span> ล้าน/วัน · ${kl.dam_date.slice(8)}/${kl.dam_date.slice(5, 7)}`;
-    chip("klChip", lv, lv ? LV_TXT[lv] : (p > 100 ? "เกินความจุ" : "ปกติ"));
-    if (!lv && p > 100) $("klChip").className = "chip c1";
-    out.push({ lv, txt: `อ่างคลองหลวง ${p.toFixed(0)}%` });
-  }
-  return out;
+    const p = +kl.dam_storage_percent, rel = kl.dam_released != null ? +kl.dam_released : null, lv = lvl(rel, null, 2.0), t = parseT(kl.dam_date + " 00:00");
+    const late = Date.now() - t > STALE.dam * 6e4 + 864e5;
+    setWhen("klWhen", t, 1e9, true); if (late) { $("klWhen").textContent += " · ข้อมูลล่าช้า"; $("klWhen").classList.add("late"); }
+    $("klRel").textContent = rel != null ? rel.toFixed(2) : "–";
+    $("klViz").innerHTML = rel == null ? "" : hbar({ min: 0, max: 3, fill: rel, fillC: lv ? "var(--red)" : "var(--water)", h: 90, ty: 32, th: 18, aria: `อ่างคลองหลวงระบาย ${rel} ล้าน ลบ.ม./วัน`,
+      ticks: [{ v: 2.0, c: "var(--red)", label: "อันตราย 2.0", anchor: "end", lw: 90 }],
+      refs: [{ v: 2.5, label: "ปี 56 อ่างแตก 2.5", anchor: "end", below: true }],
+      marks: [{ v: rel, label: `ระบาย ${rel.toFixed(2)}`, lw: 90 }] });
+    $("klSay").innerHTML = rel == null ? "" : (rel < 2 ? `ระบายต่ำกว่าเกณฑ์อันตรายอีก <b>${(2 - rel).toFixed(2)}</b> ล้าน ลบ.ม./วัน` : `ระบายเกินเกณฑ์อันตราย <b>${(rel - 2).toFixed(2)}</b> ล้าน ลบ.ม./วัน`)
+      + `<br><span class="soft" style="font-weight:400">ความจุตอนนี้ <span class="num">${p.toFixed(0)}%</span> (${kl.dam_storage} / 98 ล้าน ลบ.ม.)${p > 100 ? " — เกิน 100% ปกติของอ่างนี้ ไม่ได้แปลว่าอันตราย" : ""}</span>`
+      + (late ? `<div class="late-box">ข้อมูลล่าช้า — กรมชลฯ ยังไม่อัปเดต ไม่นับในสถานะรวม</div>` : "");
+    $("klInfo").innerHTML = `น้ำเข้า <span class="num">${kl.dam_inflow ?? "–"}</span> ล้าน ลบ.ม./วัน`;
+    const s = late ? "x" : ST_LV[lv];
+    setCard("cKl", s); chip("klChip", late ? "x" : lv, late ? "ข้อมูลล่าช้า" : ["ปลอดภัย", "เฝ้าระวัง", "อันตราย"][lv]);
+    item("kl", { name: "อ่างคลองหลวง", mini: rel != null ? rel.toFixed(2) : "–", short: rel != null ? `ระบาย ${rel.toFixed(2)}` : "–", s, lv: late ? null : lv, card: "cKl", score: rel != null ? scoreOf(rel, 0, 2.0) : 0,
+      gap: rel == null ? "" : rel < 2 ? `ระบาย ${rel.toFixed(2)} · อีก ${(2 - rel).toFixed(2)} ล้าน ลบ.ม./วัน ถึงอันตราย` : "ระบายเกินอันตราย" });
+  } else { setCard("cKl", "x"); chip("klChip", "x", "ไม่มีข้อมูล"); noData("klViz", "klSay", "ไม่มีข้อมูลอ่างคลองหลวง"); item("kl", { name: "อ่างคลองหลวง", short: "ไม่มีข้อมูล", s: "x", lv: null, card: "cKl" }); }
 }
 
+/* ════════ ฝนวัดจริง ════════ */
 async function loadRain() {
-  const d = await j(`${API}/public/rain_24h`);
   let best = null, n = 0;
-  for (const x of d.data) {
-    const s = x.station || {}, la = +s.tele_station_lat, lo = +s.tele_station_long;
-    if (!la || !lo) continue;
-    const km = Math.hypot((la - OFFICE[0]) * 111, (lo - OFFICE[1]) * 108);
-    if (km > 25 || x.rain_24h == null) continue;
-    const t = new Date((x.rainfall_datetime || "").slice(0, 16).replace(" ", "T")).getTime();
-    if (!(Date.now() - t < 2 * 36e5)) continue;
-    n++;
-    const r1 = +(x.rain_1h || 0), r24 = +x.rain_24h;
-    if (!best || r1 > best.r1 || (r1 === best.r1 && r24 > best.r24)) best = { r1, r24, name: s.tele_station_name?.th || "?", km, t: x.rainfall_datetime };
+  if (DEMO) { best = { r1: DEMO === "red" ? 42 : DEMO === "yellow" ? 23 : 0, r24: DEMO === "red" ? 118 : 46, name: "สถานีทดสอบ", km: 6, t: tstr(Date.now() - (DEMO === "stale" ? 90 : 12) * 6e4) }; n = 5; }
+  else {
+    const d = await j(`${API}/public/rain_24h`);
+    for (const x of d.data) {
+      const s = x.station || {}, la = +s.tele_station_lat, lo = +s.tele_station_long;
+      if (!la || !lo) continue;
+      const km = Math.hypot((la - OFFICE[0]) * 111, (lo - OFFICE[1]) * 108);
+      if (km > 25 || x.rain_24h == null) continue;
+      const t = new Date((x.rainfall_datetime || "").slice(0, 16).replace(" ", "T")).getTime();
+      if (!(Date.now() - t < 2 * 36e5)) continue;
+      n++;
+      const r1 = +(x.rain_1h || 0), r24 = +x.rain_24h;
+      if (!best || r1 > best.r1 || (r1 === best.r1 && r24 > best.r24)) best = { r1, r24, name: s.tele_station_name?.th || "?", km, t: x.rainfall_datetime };
+    }
   }
-  if (!best) { $("rain1").textContent = "–"; $("rainInfo").textContent = "ไม่มีสถานีรายงานใน 2 ชม."; chip("rainChip", 0, "ไม่มีข้อมูล"); return { lv: 0 }; }
-  const lv = lvl(best.r1, 20, 35);
+  if (!best) { $("rain1").textContent = "–"; $("rainViz").innerHTML = ""; $("rainInfo").textContent = "ไม่มีสถานีรายงานใน 2 ชม."; chip("rainChip", "x", "ไม่มีข้อมูล"); setCard("cRain", "x"); item("rain", { name: "ฝน 1 ชม.", short: "ไม่มีข้อมูล", s: "x", lv: null, card: "cRain" }); return; }
+  const lv = lvl(best.r1, 20, 35), t = parseT(best.t), late = setWhen("rainWhen", t, STALE.station);
   $("rain1").textContent = best.r1.toFixed(0);
-  $("rainInfo").textContent = `${best.name} (${best.km.toFixed(0)} กม.) · 24 ชม. ${best.r24.toFixed(0)} มม. · ${n} สถานี · ${fmtT(best.t)}`;
-  chip("rainChip", lv);
-  return { lv, txt: best.r1 >= 1 ? `ฝน ${best.r1.toFixed(0)} มม./ชม.` : null };
+  $("rainViz").innerHTML = hbar({ min: 0, max: 50, fill: best.r1, fillC: ["var(--water)", "var(--yellow)", "var(--red)"][lv], h: 74, ty: 30, th: 14, aria: `ฝน 1 ชม. ${best.r1} มม.`,
+    zones: [{ a: 20, b: 35, c: "var(--zone-y)" }, { a: 35, b: 50, c: "var(--zone-r)" }],
+    ticks: [{ v: 20, c: "var(--yellow)", label: "20 เฝ้าระวัง", lw: 80 }, { v: 35, c: "var(--red)", label: "35+ อันตราย", lw: 80 }],
+    marks: [{ v: best.r1, label: `${best.r1.toFixed(0)} มม.`, lw: 50 }] });
+  $("rainInfo").innerHTML = `${esc(best.name)} (${best.km.toFixed(0)} กม.) · สะสม 24 ชม. <span class="num">${best.r24.toFixed(0)}</span> มม. · ${n} สถานี` + (late ? `<div class="late-box">ข้อมูลล่าช้า ไม่นับในสถานะรวม</div>` : "");
+  const s = late ? "x" : ST_LV[lv];
+  setCard("cRain", s); chip("rainChip", late ? "x" : lv, late ? "ข้อมูลล่าช้า" : ["ไม่หนัก", "เฝ้าระวัง", "อันตราย"][lv]);
+  item("rain", { name: "ฝน 1 ชม.", short: `${best.r1.toFixed(0)} มม.`, s, lv: late ? null : lv, card: "cRain", score: scoreOf(best.r1, 0, 35),
+    gap: best.r1 < 20 ? `อีก ${(20 - best.r1).toFixed(0)} มม. ถึงเฝ้าระวัง` : best.r1 < 35 ? `อีก ${(35 - best.r1).toFixed(0)} มม. ถึงอันตราย` : `เกินเกณฑ์อันตราย (35 มม./ชม.)` });
 }
 
 async function loadBpk() {
-  const now = new Date(), st = new Date(now - 864e5);
-  const d = await j(`${API}/public/waterlevel_graph?station_type=tele_waterlevel&station_id=${BPK}&start_date=${ymd(st)}&end_date=${ymd(now)}%2023:59`);
-  const pts = d.data.graph_data.filter(p => p.value != null);
+  let pts;
+  if (DEMO) pts = [{ value: DEMO === "red" ? 1.5 : 1.1, datetime: tstr(Date.now() - 15 * 6e4) }];
+  else {
+    const now = new Date(), st = new Date(now - 864e5);
+    const d = await j(`${API}/public/waterlevel_graph?station_type=tele_waterlevel&station_id=${BPK}&start_date=${ymd(st)}&end_date=${ymd(now)}%2023:59`);
+    pts = d.data.graph_data.filter(p => p.value != null);
+  }
   const e = pts[pts.length - 1], mx = Math.max(...pts.map(p => p.value));
   $("bpkWl").textContent = e.value.toFixed(2);
-  $("bpkInfo").textContent = `สูงสุด 24 ชม. ${mx.toFixed(2)} ม. (ตอนท่วม ก.ย. 1.45) · ตลิ่ง ${BPK_BANK} ม. · ${fmtT(e.datetime)}`;
+  setWhen("bpkWhen", parseT(e.datetime), STALE.station);
+  $("bpkInfo").textContent = `สูงสุด 24 ชม. ${mx.toFixed(2)} ม. (ตอนท่วม ก.ย. 1.45) · ตลิ่ง ${BPK_BANK} ม.`;
   chip("bpkChip", mx >= 1.4 ? 1 : 0, mx >= 1.4 ? "น้ำขึ้นสูง" : "ปกติ");
 }
 
@@ -573,26 +981,53 @@ $("radarPlay").addEventListener("click", () => {
   RV.timer = setInterval(() => { i++; if (i >= RV.frames.length) return stopRadar(); drawRadar(i); $("radarSlider").value = i; }, 450);
 });
 
+/* ════════ รวมสถานะ + เรียงการ์ด ════════ */
+const HERO = { 0: ["🟢", "ปลอดภัย"], 1: ["🟡", "เฝ้าระวัง"], 2: ["🔴", "อันตราย"], x: ["⚪", "ยืนยันไม่ได้"] };
+const RANK = { "2": 3, "15": 2, "1": 1 };
+function renderHero(fails) {
+  const list = ["A", "vg", "kgt", "bb", "kl", "rain", "radar"].map(k => ITEMS[k]).filter(Boolean);
+  const fresh = list.filter(i => i.lv != null), late = list.filter(i => i.lv == null);
+  const core = ["kgt", "vg"].filter(k => !ITEMS[k] || ITEMS[k].lv == null);
+  let lv = fresh.length ? Math.max(...fresh.map(i => i.lv)) : null;
+  if (lv === 0 && core.length === 2) lv = null;   // ข้อมูลหลักทั้งคลองหลวงและคลองกลางเมืองขาด → ไม่ฟันธงเขียว
+  const h = $("hero"), key = lv == null ? "x" : lv;
+  h.dataset.s = key; $("heroIco").textContent = HERO[key][0]; $("heroLv").textContent = HERO[key][1];
+  const hot = fresh.filter(i => i.lv >= 1).sort((a, b) => b.lv - a.lv || (b.score || 0) - (a.score || 0));
+  $("heroSub").textContent = lv == null ? "ข้อมูลหลักดึงไม่ได้/ล่าช้า — ดูการ์ดด้านล่าง หรือกดดึงใหม่"
+    : hot.length > 2 ? `ข้ามเกณฑ์ ${hot.length} จุด — การ์ดที่หนักสุดเลื่อนขึ้นบนแล้ว` : hot.length ? "ข้ามเกณฑ์: " + hot.map(i => i.name).join(" · ") : "ทุกจุดยังต่ำกว่าเกณฑ์เฝ้าระวัง";
+  const top = fresh.filter(i => i.gap).sort((a, b) => (b.lv - a.lv) || ((b.score || 0) - (a.score || 0)))[0];
+  $("heroNear").hidden = !top;
+  if (top) $("heroNear").innerHTML = `${lv ? "ตัวที่หนักสุด" : "ตัวที่ใกล้วิกฤตสุด"}: <strong>${esc(top.name)}</strong> ${esc(top.short)} — ${esc(top.gap)}`;
+  const warn = late.map(i => i.name);
+  $("heroWarn").hidden = !warn.length && !fails.length;
+  $("heroWarn").textContent = [warn.length ? `ข้อมูลล่าช้า/ไม่มี (ไม่นับรวม): ${warn.join(", ")}` : "", fails.length ? `ดึงไม่ได้: ${fails.join(", ")}` : ""].filter(Boolean).join(" · ");
+  $("heroList").innerHTML = list.map(i => `<a class="mini" data-s="${i.s}" href="#${i.card}"><i aria-hidden="true"></i><span>${esc(i.mname || i.name)}</span><b>${esc(i.mini ?? i.short ?? "")}</b></a>`).join("");
+  // การ์ดที่ระดับสูงกว่าเลื่อนขึ้นบน (ระดับเท่ากันคงลำดับเดิม)
+  for (const c of document.querySelectorAll("#cards > .card")) { const r = RANK[c.dataset.s] || 0; c.style.order = String(+c.dataset.o - r * 100); }
+}
+
 let busy = false;
 async function load() {
   if (busy) return; busy = true;
   const btn = $("refresh"); btn.textContent = "กำลังดึง…"; btn.disabled = true;
-  const res = await Promise.allSettled([loadKgt(), loadDams(), loadRain(), loadBpk(), loadFc(), loadRadar()]);
-  const items = [], fails = [];
-  const names = ["คลองหลวง", "อ่าง", "ฝน", "บางปะกง", "ฝนพยากรณ์", "เรดาร์"];
-  if (res[5].status === "rejected") { chip("radarChip", 0, "ดึงไม่ได้"); $("radarChip").className = "chip cx"; $("radarInfo").textContent = "ดึงเรดาร์ไม่ได้รอบนี้ (" + res[5].reason.message + ") — ตัวอื่นยังใช้ได้"; }
-  res.forEach((r, i) => { if (r.status === "fulfilled") { [].concat(r.value || []).forEach(v => v && v.lv != null && items.push(v)); } else fails.push(names[i]); });
-  const lv = res.slice(0, 3).some(r => r.status === "fulfilled") ? Math.max(0, ...items.map(v => v.lv)) : null;
-  const b = $("banner");
-  if (lv == null) { b.className = "banner lvx"; b.querySelector(".lv").textContent = "ดึงข้อมูลไม่ได้"; }
+  const jobs = [loadStatus().then(st => { renderA(st); renderVg(st); }), loadKgt(), loadDams(), loadRain(), loadBpk(), loadFc(), loadRadar()];
+  const names = ["จุด A/คลองกลางเมือง", "คลองหลวง", "อ่าง", "ฝน", "บางปะกง", "ฝนพยากรณ์", "เรดาร์"];
+  const res = await Promise.allSettled(jobs), fails = [];
+  res.forEach((r, i) => { if (r.status === "rejected") { fails.push(names[i]); console.error(names[i], r.reason); } });
+  if (res[0].status === "rejected") { renderA(null); renderVg(null); }
+  if (res[1].status === "rejected") { setCard("cKgt", "x"); chip("kgtChip", "x", "ดึงไม่ได้"); noData("kgtViz", "kgtSay", "ดึงข้อมูลคลองหลวงไม่ได้รอบนี้ — กดดึงใหม่"); item("kgt", { name: "คลองหลวง", short: "ดึงไม่ได้", s: "x", lv: null, card: "cKgt" }); }
+  if (res[2].status === "rejected") { ["cBb", "cKl"].forEach(c => setCard(c, "x")); chip("bbChip", "x", "ดึงไม่ได้"); chip("klChip", "x", "ดึงไม่ได้"); item("bb", { name: "อ่างบ้านบึง", short: "ดึงไม่ได้", s: "x", lv: null, card: "cBb" }); item("kl", { name: "อ่างคลองหลวง", short: "ดึงไม่ได้", s: "x", lv: null, card: "cKl" }); }
+  if (res[3].status === "rejected") { setCard("cRain", "x"); chip("rainChip", "x", "ดึงไม่ได้"); item("rain", { name: "ฝน 1 ชม.", short: "ดึงไม่ได้", s: "x", lv: null, card: "cRain" }); }
+  if (res[6].status === "rejected") { chip("radarChip", "x", "ดึงไม่ได้"); setCard("radar", "x"); $("radarInfo").textContent = "ดึงเรดาร์ไม่ได้รอบนี้ (" + res[6].reason.message + ") — ตัวอื่นยังใช้ได้"; item("radar", { name: "เรดาร์", short: "ดึงไม่ได้", s: "x", lv: null, card: "radar" }); }
   else {
-    b.className = "banner lv" + lv;
-    b.querySelector(".lv").textContent = ["🟢 ปกติ", "🟡 เฝ้าระวัง", "🔴 อันตราย"][lv];
+    const r = res[6].value, stale = /ภาพเก่า/.test($("radarChip").textContent);
+    setCard("radar", stale ? "x" : ST_LV[r.lv]);
+    if (stale) $("radarChip").className = "chip cx";
+    item("radar", { name: "เรดาร์ฝน", mini: stale ? "เก่า" : r.lv ? LV_TXT[r.lv] : "ปกติ", short: stale ? "ภาพเก่า" : r.lv ? LV_TXT[r.lv] : "ไม่มีฝนหนักในลุ่ม", s: stale ? "x" : ST_LV[r.lv], lv: stale ? null : r.lv, card: "radar", score: r.lv ? 0.5 + r.lv * 0.3 : 0.05, gap: r.lv ? (r.txt || "").replace(/^เรดาร์: /, "") : "" });
   }
-  const hot = items.filter(v => v.lv >= 1).map(v => v.txt).filter(Boolean);
-  $("bannerSub").innerHTML = lv == null ? `<span class="err">ดึงข้อมูลน้ำไม่ได้: ${fails.join(", ")} · กดดึงใหม่ หรือรอ 10 นาที</span>` : (hot.length ? "ข้ามเกณฑ์: " + hot.join(" · ") : "ทุกจุดยังต่ำกว่าเกณฑ์") +
-    (fails.length ? `<br><span class="err">ดึงไม่ได้: ${fails.join(", ")} (ลองกดดึงใหม่)</span>` : "");
-  const n = new Date(); $("foot").textContent = `ดึงล่าสุด ${pad(n.getHours())}:${pad(n.getMinutes())} น. · หน้านี้ดึงใหม่เองทุก 10 นาที และทุกครั้งที่กลับมาเปิด`;
+  renderHero(fails);
+  const n = new Date(); $("heroTime").textContent = `ดึงล่าสุด ${pad(n.getHours())}:${pad(n.getMinutes())} น. · ดึงใหม่เองทุก 10 นาที และทุกครั้งที่กลับมาเปิด`;
+  $("foot").textContent = DEMO ? "โหมดทดสอบ — ตัวเลขทั้งหมดเป็นค่าปลอม (ยกเว้นเรดาร์)" : "ข้อมูลวัดจริงดึงสดจาก thaiwater ทุกครั้งที่เปิด";
   btn.textContent = "↻ ดึงใหม่"; btn.disabled = false; busy = false;
 }
 $("refresh").addEventListener("click", load);
