@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="referrer" content="no-referrer">
+<meta name="theme-color" content="#F0EEE6">
+<title>น้ำเข้าพนัส</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+Thai:wght@500;600&family=Sarabun:wght@400;600&family=IBM+Plex+Mono:wght@500&display=swap">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+<style>
+/* หน้าเดียวแนวตั้งสำหรับมือถือ: แถบสถานะรวม → การ์ดคลองหลวง (กราฟ) → การ์ดย่อย 2 คอลัมน์ → ฝนพยากรณ์ */
+:root{
+  --bg:#F0EEE6; --surface:#FFFFFF; --surface-2:#FAF9F5;
+  --ink:#1F1E1D; --ink-soft:#6B6A63; --border:#E6E2D6;
+  --accent:#D97757; --accent-deep:#BD5D3A;
+  --red:#C44536; --yellow:#B08A12; --green:#5B7A5B; --gray:#9B998F;
+  --red-bg:#F6E1DD; --yellow-bg:#F4ECD2; --green-bg:#E3EBE2;
+  --water:#3E6E8E; --water-fill:rgba(62,110,142,.14);
+  --radius:12px; --shadow:0 1px 3px rgba(31,30,29,.06),0 10px 30px rgba(31,30,29,.05);
+  --f-head:'Noto Serif Thai',Georgia,serif; --f-body:'Sarabun',-apple-system,sans-serif; --f-num:'IBM Plex Mono',ui-monospace,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#1C1B19; --surface:#262522; --surface-2:#2D2B28; --ink:#EDEBE4; --ink-soft:#A8A59B; --border:#3A3833;
+  --accent:#E08A6B; --accent-deep:#E8A085; --red:#E46A5A; --yellow:#D9B648; --green:#8DB08D; --gray:#8A877E;
+  --red-bg:#3E2622; --yellow-bg:#3A321C; --green-bg:#243024; --water:#7FB0D0; --water-fill:rgba(127,176,208,.16);
+  --shadow:0 1px 3px rgba(0,0,0,.3); color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#1C1B19; --surface:#262522; --surface-2:#2D2B28; --ink:#EDEBE4; --ink-soft:#A8A59B; --border:#3A3833;
+  --accent:#E08A6B; --accent-deep:#E8A085; --red:#E46A5A; --yellow:#D9B648; --green:#8DB08D; --gray:#8A877E;
+  --red-bg:#3E2622; --yellow-bg:#3A321C; --green-bg:#243024; --water:#7FB0D0; --water-fill:rgba(127,176,208,.16);
+  --shadow:0 1px 3px rgba(0,0,0,.3); color-scheme:dark}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font:16px/1.6 var(--f-body);padding:env(safe-area-inset-top,0px) 16px calc(24px + env(safe-area-inset-bottom,0px))}
+main{max-width:720px;margin:0 auto;display:grid;gap:14px;padding-block:14px}
+h1,h2{font-family:var(--f-head);font-weight:600;margin:0;text-wrap:balance}
+h1{font-size:1.45rem;line-height:1.3}
+h2{font-size:1.05rem}
+.num{font-family:var(--f-num);font-variant-numeric:tabular-nums}
+.soft{color:var(--ink-soft)}
+.small{font-size:.82rem}
+header{display:flex;justify-content:space-between;align-items:flex-end;gap:12px;flex-wrap:wrap}
+button{font:600 .9rem var(--f-body);color:var(--ink);background:var(--surface);border:1px solid var(--border);border-radius:999px;padding:8px 16px;cursor:pointer}
+button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.card{background:var(--surface);border-radius:var(--radius);box-shadow:var(--shadow);padding:16px;min-width:0}
+.banner{border-radius:var(--radius);padding:16px;display:grid;gap:4px}
+.banner .lv{font-family:var(--f-head);font-size:1.3rem;font-weight:600}
+.lv0{background:var(--green-bg)} .lv0 .lv{color:var(--green)}
+.lv1{background:var(--yellow-bg)} .lv1 .lv{color:var(--yellow)}
+.lv2{background:var(--red-bg)} .lv2 .lv{color:var(--red)}
+.lvx{background:var(--surface-2)}
+.chip{display:inline-flex;align-items:center;gap:6px;border-radius:999px;padding:2px 10px;font-size:.8rem;font-weight:600;white-space:nowrap}
+.chip::before{content:"";width:8px;height:8px;border-radius:50%;background:currentColor}
+.c0{color:var(--green);background:var(--green-bg)} .c1{color:var(--yellow);background:var(--yellow-bg)} .c2{color:var(--red);background:var(--red-bg)} .cx{color:var(--gray);background:var(--surface-2)}
+.row{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
+.big{font-family:var(--f-num);font-size:2rem;line-height:1.1;font-variant-numeric:tabular-nums}
+.big small{font-size:.9rem;color:var(--ink-soft);font-family:var(--f-body)}
+#map{height:62vh;min-height:360px;border-radius:var(--radius);box-shadow:var(--shadow)}
+.leg{display:grid;gap:6px;margin:0;padding:0;list-style:none}
+.leg li{display:flex;gap:10px;align-items:flex-start}
+.sw{flex:0 0 26px;height:6px;border-radius:3px;margin-top:10px}
+.sw.area{height:14px;margin-top:5px;opacity:.5}
+.pin{flex:0 0 26px;height:26px;border-radius:50%;display:grid;place-items:center;font:600 .78rem var(--f-num);color:#fff;background:var(--red)}
+.s{display:grid;grid-template-columns:30px 1fr;gap:10px;padding:12px 0;border-top:1px solid var(--border)}
+.s:first-of-type{border-top:0}
+.s a{color:var(--accent-deep);font-weight:600}
+.lbl{background:var(--surface);color:var(--ink);border:1px solid var(--border);border-radius:6px;padding:1px 6px;font:600 12px var(--f-body);box-shadow:var(--shadow);white-space:nowrap}
+.mk{width:28px;height:28px;border-radius:50%;background:var(--red);color:#fff;display:grid;place-items:center;font:600 12px var(--f-num);border:2px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,.4)}
+.mk.alt{background:var(--yellow)}
+.leaflet-popup-content{font:14px/1.5 var(--f-body)}
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <div><div class="small soft">ออฟฟิศ สุวรรณหงษ์ · พนัสนิคม</div><h1>น้ำเข้าเมืองพนัสมาจากไหน</h1></div>
+    <a href="./" class="small">← กลับหน้าน้ำสด</a>
+  </header>
+
+  <section class="card">
+    <p style="margin:0"><b>สรุป:</b> น้ำที่ท่วม<b>กลางเมือง</b> (ออฟฟิศ · ตลาด · บ้านเช่า 44) มากับ<b>คลองกลางเมือง</b> (เส้นแดง) ซึ่งแยกมาจากลำน้ำสายใหญ่ทางตะวันออกเฉียงใต้ ที่จุดแยกห่างเมือง ~8 กม. ต้นน้ำของสายนี้คือพื้นที่สีส้ม (รวมบ่อหนองเสม็ด/อาหารสยามริมถนน 331) ส่วน<b>ห้วยเกวียนตามชื่อในแผนที่</b> (เส้นส้ม) ไหลผ่านด้านตะวันตกของเมือง ห่าง ~1.5–2 กม.</p>
+  </section>
+
+  <div id="map" role="img" aria-label="แผนที่ลำน้ำและจุดติดเซนเซอร์"></div>
+  <div class="small soft" style="margin-top:-6px">แตะหมุดเพื่อดูรายละเอียด · ปุ่มมุมขวาบนสลับภาพดาวเทียม/แผนที่</div>
+
+  <section class="card">
+    <h2 style="margin-bottom:10px">สัญลักษณ์</h2>
+    <ul class="leg small">
+      <li><span class="sw" style="background:#E53935"></span><span><b>คลองกลางเมือง</b> ไหลจากใต้ขึ้นเหนือ ผ่านออฟฟิศ 140 ม. (ในแผนที่ชื่อ "คลองเมือง" ช่วงเหนือออฟฟิศ)</span></li>
+      <li><span class="sw" style="background:#1E88E5"></span><span><b>ลำน้ำสายใหญ่ตะวันออก</b> จากถนน 331 → จุดแยก → อ้อมเมืองด้านตะวันออก</span></li>
+      <li><span class="sw" style="background:#FB8C00"></span><span><b>ห้วยเกวียน</b> (ชื่อตามแผนที่) ด้านตะวันตกของเมือง</span></li>
+      <li><span class="sw" style="background:#8E24AA"></span><span>สายจากอ่างบ้านบึง (ประมาณจากความสูงพื้นดิน ไหลผ่านตะวันตก ไกลกว่าห้วยเกวียน)</span></li>
+      <li><span class="sw area" style="background:#FF9800"></span><span>พื้นที่ต้นน้ำที่ไหลมาถึงจุดแยก ≈ <span id="km2"></span> ตร.กม. (ประมาณจาก DEM)</span></li>
+    </ul>
+  </section>
+
+  <section class="card">
+    <h2>จุดติดเซนเซอร์ระดับน้ำ</h2>
+    <div id="sensors"></div>
+    <p class="small soft" style="margin:8px 0 0">เลือกจากสะพานที่ถนนข้ามลำน้ำ (ติดตั้งใต้สะพาน ส่งข้อมูลผ่าน 4G) · ต้องให้คนไปดูหน้างานก่อนว่าสะพานติดได้จริง และอาจต้องขออนุญาตเทศบาล/อบต. · <a href="phanat-sensors.kml" download>โหลดไฟล์ KML</a> เข้า Google My Maps ได้</p>
+  </section>
+
+  <section class="card small soft">
+    ที่มา: ลำน้ำ/ถนน OpenStreetMap · ทิศน้ำไหลตรวจกับความสูงพื้นดิน FABDEM (OSM วาดทิศคลองกลางเมืองกลับด้าน) · จุดแยกตรวจด้วยภาพดาวเทียมแล้ว · 5 ต.ค. 69 ·
+    ยังต้องยืนยันหน้างาน: ชื่อคลองที่คนในพื้นที่เรียก และน้ำแยกเข้าคลองกลางเมืองที่จุดแยกได้แค่ไหนตอนน้ำมาก
+  </section>
+</main>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script>
+(async () => {
+  const D = await (await fetch("map_data.json")).json();
+  document.getElementById("km2").textContent = D.basin_km2;
+  const map = L.map("map", { scrollWheelZoom: false }).fitBounds([[13.25, 101.12], [13.47, 101.29]]);
+  const sat = L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}", { maxZoom: 19, attribution: "Esri World Imagery" });
+  const osm = L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", { maxZoom: 19, attribution: "© OpenStreetMap" });
+  sat.addTo(map);
+  L.control.layers({ "ดาวเทียม": sat, "แผนที่": osm }).addTo(map);
+  const e = .00012; D.basin.forEach(r => L.rectangle([[r[0] - e, r[1] - e], [r[2] + e, r[3] + e]], { stroke: false, fillColor: "#FF9800", fillOpacity: .3, interactive: false }).addTo(map));
+  const line = (cs, color, w, tip) => cs.forEach(c => L.polyline(c, { color, weight: w, opacity: .95 }).bindTooltip(tip, { sticky: true }).addTo(map));
+  line([D.stem], "#8E24AA", 3, "สายจากอ่างบ้านบึง (ประมาณ)");
+  line(D.east, "#1E88E5", 4, "ลำน้ำสายใหญ่ตะวันออก");
+  line(D.hk, "#FB8C00", 5, "ห้วยเกวียน");
+  line(D.town, "#E53935", 6, "คลองกลางเมือง → เข้ากลางเมือง");
+  D.poi.forEach(p => L.circleMarker([p.lat, p.lon], { radius: 5, color: "#fff", weight: 2, fillColor: "#1F1E1D", fillOpacity: 1 })
+    .bindTooltip(p.name, { permanent: true, direction: "right", className: "lbl", offset: [6, 0] }).addTo(map));
+  const box = document.getElementById("sensors");
+  D.sensors.forEach(s => {
+    const alt = s.id === "S4" || s.id === "S3";
+    L.marker([s.lat, s.lon], { icon: L.divIcon({ className: "", html: `<div class="mk${alt ? " alt" : ""}">${s.id}</div>`, iconSize: [28, 28], iconAnchor: [14, 14] }) })
+      .bindPopup(`<b>${s.id} ${s.name}</b><br>${s.pri}<br>${s.why}<br><a href="${s.g}" target="_blank" rel="noopener">เปิด Google Maps</a>`).addTo(map);
+    box.insertAdjacentHTML("beforeend", `<div class="s"><span class="pin" style="${alt ? "background:var(--yellow)" : ""}">${s.id}</span><div><b>${s.name}</b> <span class="small soft">· ${s.pri}</span><div class="small">${s.why}</div><div class="small"><a href="${s.g}" target="_blank" rel="noopener">${s.lat}, ${s.lon} · เปิด Google Maps</a></div></div></div>`);
+  });
+})();
+</script>
+</body>
+</html>
