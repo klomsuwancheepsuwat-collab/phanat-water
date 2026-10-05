@@ -87,6 +87,12 @@ button:disabled{opacity:.6}
 .hero-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}
 .mini{font-size:.77rem !important;display:flex;min-width:0;white-space:nowrap;overflow:hidden;align-items:center;gap:6px;border-radius:999px;padding:3px 10px 3px 6px;font-size:.8rem;font-weight:600;text-decoration:none;color:var(--ink);background:var(--surface)}
 .mini i{width:16px;height:16px;border-radius:50%;flex:none;font-style:normal;font-size:.7rem;display:grid;place-items:center;color:#fff}
+.htimes{display:grid;grid-template-columns:1fr 1fr;gap:2px 12px;margin-top:10px;font-size:.74rem;opacity:.92}
+.htimes b{grid-column:1/-1;font-weight:600}
+.htimes span{display:flex;justify-content:space-between;gap:6px;min-width:0;white-space:nowrap}
+.htimes em{font-style:normal;font-family:var(--f-num,monospace);overflow:hidden;text-overflow:ellipsis}
+.htimes .late em::after{content:" ⚠";}
+@media (max-width:420px){.htimes{grid-template-columns:1fr}}
 .mini b{font-variant-numeric:tabular-nums;font-weight:700;margin-left:auto;padding-left:4px}
 .mini span{overflow:hidden;text-overflow:ellipsis}
 .mini[data-s="0"] i{background:var(--hero-0)} .mini[data-s="0"] i::before{content:"✓"}
@@ -199,6 +205,7 @@ ul{margin:6px 0 0;padding-left:1.1rem}
     <div class="hero-near" id="heroNear" hidden></div>
     <div class="hero-warn" id="heroWarn" hidden></div>
     <div class="hero-list" id="heroList"></div>
+      <div class="htimes" id="heroTimes" aria-label="เวลาอัปเดตแต่ละหมวด"></div>
     <div class="hero-time" id="heroTime"></div>
   </section>
 
@@ -292,7 +299,7 @@ ul{margin:6px 0 0;padding-left:1.1rem}
     <section class="card" id="radar" data-s="x" data-o="7">
       <div class="ch">
         <div><h2>เรดาร์ฝน ย้อน 2 ชม. + พยากรณ์ 90 นาที<small>ภาพจริงทุก 10 นาที แล้วต่อภาพไปข้างหน้าตามทิศที่กลุ่มฝนกำลังเคลื่อน · ไม่เห็นพายุที่จะก่อตัวใหม่</small></h2>
-          <div class="meta"><span class="tag t-real">วัดจริง</span><span class="tag t-fc">พยากรณ์</span></div></div>
+          <div class="meta"><span class="tag t-real">วัดจริง</span><span class="tag t-fc">พยากรณ์</span><span class="when" id="radarWhen"></span></div></div>
         <span class="chip cx" id="radarChip">รอข้อมูล</span>
       </div>
       <div class="radarwrap" id="radarWrap"><canvas id="radarCv" width="308" height="264" aria-label="ภาพเรดาร์ฝนรอบพนัสนิคม พร้อมขอบลุ่มน้ำ"></canvas></div>
@@ -329,7 +336,7 @@ ul{margin:6px 0 0;padding-left:1.1rem}
         <summary><span>ฝนพยากรณ์ 5 วัน</span><span class="tag t-fc">พยากรณ์</span></summary>
         <div class="body">
           <div class="fc" id="fc"></div>
-          <div class="note">ECMWF · จุดออฟฟิศ · แบบจำลองมักให้ฝนต่ำกว่าจริง 1.3–4 เท่า ใช้ดูแนวโน้ม</div>
+          <div class="note">ECMWF · จุดออฟฟิศ · แบบจำลองมักให้ฝนต่ำกว่าจริง 1.3–4 เท่า ใช้ดูแนวโน้ม · <span class="when" id="fcWhen"></span></div>
         </div>
       </details>
       <details>
@@ -354,7 +361,7 @@ ul{margin:6px 0 0;padding-left:1.1rem}
             <li>ฝน 1 ชม.: เฝ้าระวัง ≥20 มม. · อันตราย ≥35 มม. (ท่อในเมืองรับไม่ทัน)</li>
             <li>เรดาร์ฝน: เฝ้าระวังเมื่อฝน ≥20 มม./ชม. ครอบ ≥10% ของลุ่มใดลุ่มหนึ่ง หรือ ≥35 มม./ชม. แตะลุ่ม ≥3 ช่อง (~4 ตร.กม.) หรือกลุ่มฝนหนักห่าง ≤15 กม. จะถึงใน 1 ชม. · อันตรายเมื่อ ≥35 มม./ชม. ครอบ ≥25% ของลุ่มต้นน้ำกลางเมืองหรือตัวเมือง ติดกัน 2 ภาพขึ้นไป</li>
             <li>เรดาร์พยากรณ์ (ต่อภาพ ถึง +60 นาที): เฝ้าระวังเมื่อคาดว่าฝน ≥20 มม./ชม. จะครอบ ≥10% ของลุ่มต้นน้ำกลางเมืองหรือตัวเมือง · อันตรายเมื่อคาดว่า ≥35 มม./ชม. จะครอบ ≥25% โดยนับเฉพาะกลุ่มฝนหนักที่เห็นจริงในภาพล่าสุดและภาพก่อนหน้า · ภาพ +70 ถึง +90 นาทีดูอย่างเดียว ไม่ใช้เตือน</li>
-            <li>ข้อมูลล่าช้า (การ์ดเป็นสีเทา ไม่นับเป็นเขียว): สถานีวัด >60 นาที · อ่าง >2 วัน · แบบจำลอง >6 ชม. · จุด A >2 วัน · เรดาร์ >40 นาที</li>
+            <li>ข้อมูลล่าช้า (การ์ดเป็นสีเทา ไม่นับเป็นเขียว): สถานีวัด >2.5 ชม. (สถานีส่งรายชั่วโมงและมาช้า ~1 ชม.) · อ่าง >2 วัน · แบบจำลอง >6 ชม. · จุด A >2 วัน · เรดาร์ >40 นาที</li>
           </ul>
         </div>
       </details>
@@ -391,7 +398,8 @@ if (DEMO) { $("demoBar").hidden = false; $("demoBar").textContent = `ข้อ�
 const tstr = ms => { const d = new Date(ms); return `${ymd(d)} ${pad(d.getHours())}:${pad(d.getMinutes())}`; };
 
 /* ── เวลา/อายุข้อมูล ── */
-const STALE = { station: 60, dam: 2 * 1440, vg: 6 * 60, A: 2 * 1440 };   // นาที
+const STALE = { station: 150,   // สถานี thaiwater ส่งรายชั่วโมงและมาช้า ~1 ชม. — 60 นาทีขึ้นเทาหลอกทั้งวัน
+               dam: 2 * 1440, vg: 6 * 60, A: 2 * 1440 };   // นาที
 const parseT = s => new Date(String(s).slice(0, 16).replace(" ", "T")).getTime();
 function agoTxt(ms) {
   const m = Math.round((Date.now() - ms) / 6e4);
@@ -403,6 +411,7 @@ function clock(ms, dateOnly) {
 }
 function setWhen(id, ms, limitMin, dateOnly) {   // คืน true = ข้อมูลล่าช้า
   const e = $(id), late = Date.now() - ms > limitMin * 6e4;
+  e.dataset.ms = ms; e.dataset.d = dateOnly ? "1" : "";
   e.textContent = (dateOnly ? "ข้อมูลวันที่ " + clock(ms, true) : "อัปเดต " + clock(ms) + " · " + agoTxt(ms)) + (late ? " · ข้อมูลล่าช้า" : "");
   e.classList.toggle("late", late);
   return late;
@@ -738,6 +747,7 @@ async function loadFc() {
   const d = await j(`https://api.open-meteo.com/v1/forecast?latitude=${OFFICE[0]}&longitude=${OFFICE[1]}&daily=precipitation_sum&models=ecmwf_ifs025&timezone=Asia%2FBangkok&forecast_days=5`);
   const days = d.daily.time, mm = d.daily.precipitation_sum.map(v => v || 0), mx = Math.max(30, ...mm);
   const wd = ["อา", "จ", "อ", "พ", "พฤ", "ศ", "ส"];
+  setWhen("fcWhen", Date.now(), 24 * 60); $("fcWhen").textContent = "ดึงล่าสุด " + clock(Date.now());
   $("fc").innerHTML = days.map((t, i) => { const dt = new Date(t + "T00:00"); return `<div><div class="b" style="height:${(mm[i] / mx * 70).toFixed(0)}px"></div><b>${mm[i].toFixed(0)}</b>${i ? wd[dt.getDay()] + " " + dt.getDate() : "วันนี้"}</div>`; }).join("");
 }
 
@@ -921,6 +931,7 @@ async function loadRadar() {
   const mv = !nc ? "" : { norain: "", still: "กลุ่มฝนแทบไม่เคลื่อน", unsure: "ฝนก่อตัว/สลายเร็ว หาทิศไม่ได้ ภาพพยากรณ์ = ภาพล่าสุดนิ่งๆ", move: `กลุ่มฝนเคลื่อน${nc.dir} ~${nc.kmh.toFixed(0)} กม./ชม.` }[nc.mode];
   $("radarNear").textContent = (why ? why + " · " : "") + (!near ? "ไม่มีกลุ่มฝนหนัก (≥35 มม./ชม.) ในรัศมี 40 กม." : near.d === 0 ? "มีกลุ่มฝนหนักอยู่ในลุ่มต้นน้ำกลางเมือง/ตัวเมืองแล้ว"
     : `กลุ่มฝนหนักใกล้สุดห่างต้นน้ำกลางเมือง/เมือง ${near.d.toFixed(0)} กม.` + (nc ? "" : near.eta != null ? ` · 30 นาทีก่อน ${near.dOld.toFixed(0)} กม. → ถึงใน ~${near.eta.toFixed(0)} นาที` : near.dOld != null ? " · ยังไม่เข้าใกล้" : "")) + (mv ? " · " + mv : "");
+  setWhen("radarWhen", tl * 1e3, RTH.stale);
   $("radarInfo").textContent = `ภาพจริงล่าสุด ${new Date(tl * 1e3).toTimeString().slice(0, 5)} น.` + (nc && nc.ti !== tl ? ` (เรดาร์ยังไม่อัปเดต ใช้สแกน ${new Date(nc.ti * 1e3).toTimeString().slice(0, 5)})` : "") + (age > RTH.stale ? ` · ⚠️ เก่า ${age.toFixed(0)} นาที ไม่ใช้ตัดสิน` : "") +
     " · RainViewer · ฝนประเมินจากสีเรดาร์ คลาดได้ราว 2 เท่า" + (nc ? "" : " · ทำภาพพยากรณ์ไม่ได้รอบนี้ (" + (ncErr ? ncErr.message : "?") + ")");
   const hot = ["hk", "town", "kl"].filter(k => last.st[k].f20 >= RTH.yf || last.st[k].n35 >= RTH.minPx).map(k => BASIN_NAME[k]);
@@ -1002,6 +1013,12 @@ function renderHero(fails) {
   $("heroWarn").hidden = !warn.length && !fails.length;
   $("heroWarn").textContent = [warn.length ? `ข้อมูลล่าช้า/ไม่มี (ไม่นับรวม): ${warn.join(", ")}` : "", fails.length ? `ดึงไม่ได้: ${fails.join(", ")}` : ""].filter(Boolean).join(" · ");
   $("heroList").innerHTML = list.map(i => `<a class="mini" data-s="${i.s}" href="#${i.card}"><i aria-hidden="true"></i><span>${esc(i.mname || i.name)}</span><b>${esc(i.mini ?? i.short ?? "")}</b></a>`).join("");
+  const TW = [["จุด A", "aWhen"], ["คลองกลางเมือง", "vgWhen"], ["คลองหลวง", "kgtWhen"], ["อ่างบ้านบึง", "bbWhen"], ["อ่างคลองหลวง", "klWhen"],
+              ["ฝน 1 ชม.", "rainWhen"], ["เรดาร์", "radarWhen"], ["บางปะกง", "bpkWhen"]];
+  $("heroTimes").innerHTML = "<b>อัปเดตล่าสุด</b>" + TW.map(([n, id]) => {
+    const e = $(id), ms = e && +e.dataset.ms;
+    return `<span class="${e && e.classList.contains("late") ? "late" : ""}">${n} <em>${!ms ? "–" : e.dataset.d ? "รายวัน " + clock(ms, true) : clock(ms) + " · " + agoTxt(ms)}</em></span>`;
+  }).join("");
   // การ์ดที่ระดับสูงกว่าเลื่อนขึ้นบน (ระดับเท่ากันคงลำดับเดิม)
   for (const c of document.querySelectorAll("#cards > .card")) { const r = RANK[c.dataset.s] || 0; c.style.order = String(+c.dataset.o - r * 100); }
 }
