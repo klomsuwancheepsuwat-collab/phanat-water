@@ -69,6 +69,7 @@ button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .lbl{background:var(--surface);color:var(--ink);border:1px solid var(--border);border-radius:6px;padding:1px 6px;font:600 12px var(--f-body);box-shadow:var(--shadow);white-space:nowrap}
 .mk{width:28px;height:28px;border-radius:50%;background:var(--red);color:#fff;display:grid;place-items:center;font:600 12px var(--f-num);border:2px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,.4)}
 .mk.alt{background:var(--yellow)}
+.mk.eye{background:var(--water)}
 .leaflet-popup-content{font:14px/1.5 var(--f-body)}
 </style>
 </head>
@@ -98,7 +99,8 @@ button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
   </section>
 
   <section class="card">
-    <h2>จุดติดเซนเซอร์ระดับน้ำ</h2>
+    <h2>จุดวัดระดับน้ำ</h2>
+    <div class="small soft">S1–S4 = จุดเสนอติดเซนเซอร์ · A = จุดที่เสี่ยดูด้วยตา</div>
     <div id="sensors"></div>
     <p class="small soft" style="margin:8px 0 0">เลือกจากสะพานที่ถนนข้ามลำน้ำ (ติดตั้งใต้สะพาน ส่งข้อมูลผ่าน 4G) · ต้องให้คนไปดูหน้างานก่อนว่าสะพานติดได้จริง และอาจต้องขออนุญาตเทศบาล/อบต. · <a href="phanat-sensors.kml" download>โหลดไฟล์ KML</a> เข้า Google My Maps ได้</p>
   </section>
@@ -128,10 +130,10 @@ button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
     .bindTooltip(p.name, { permanent: true, direction: "right", className: "lbl", offset: [6, 0] }).addTo(map));
   const box = document.getElementById("sensors");
   D.sensors.forEach(s => {
-    const alt = s.id === "S4" || s.id === "S3";
-    L.marker([s.lat, s.lon], { icon: L.divIcon({ className: "", html: `<div class="mk${alt ? " alt" : ""}">${s.id}</div>`, iconSize: [28, 28], iconAnchor: [14, 14] }) })
+    const alt = s.id === "S4" || s.id === "S3", eye = s.id === "A";
+    L.marker([s.lat, s.lon], { icon: L.divIcon({ className: "", html: `<div class="mk${alt ? " alt" : ""}${eye ? " eye" : ""}">${s.id}</div>`, iconSize: [28, 28], iconAnchor: [14, 14] }) })
       .bindPopup(`<b>${s.id} ${s.name}</b><br>${s.pri}<br>${s.why}<br><a href="${s.g}" target="_blank" rel="noopener">เปิด Google Maps</a>`).addTo(map);
-    box.insertAdjacentHTML("beforeend", `<div class="s"><span class="pin" style="${alt ? "background:var(--yellow)" : ""}">${s.id}</span><div><b>${s.name}</b> <span class="small soft">· ${s.pri}</span><div class="small">${s.why}</div><div class="small"><a href="${s.g}" target="_blank" rel="noopener">${s.lat}, ${s.lon} · เปิด Google Maps</a></div></div></div>`);
+    box.insertAdjacentHTML("beforeend", `<div class="s"><span class="pin" style="${eye ? "background:var(--water)" : alt ? "background:var(--yellow)" : ""}">${s.id}</span><div><b>${s.name}</b> <span class="small soft">· ${s.pri}</span><div class="small">${s.why}</div><div class="small"><a href="${s.g}" target="_blank" rel="noopener">${s.lat}, ${s.lon} · เปิด Google Maps</a></div></div></div>`);
   });
 })();
 </script>
