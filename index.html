@@ -112,14 +112,15 @@ a{color:var(--accent-deep)}
   <div class="grid2">
     <section class="card" id="bb">
       <div class="row"><h2>อ่างบ้านบึง</h2><span class="chip cx" id="bbChip">รอข้อมูล</span></div>
-      <div class="small soft">ต้นน้ำฝั่งห้วยเกวียน</div>
+      <div class="small soft">ถ้าเต็มจะล้นลงห้วยเกวียน → เข้าเมืองฝั่งตะวันตกเฉียงใต้</div>
       <div class="big" style="margin-top:8px"><span id="bbPct">–</span><small>%</small></div>
       <div class="bar"><i id="bbBar" style="width:0"></i><span class="tick" style="left:calc(95% / 1.4)" title="95%"></span></div>
+      <div class="small" id="bbFull" style="margin-top:6px;font-weight:600"></div>
       <div class="small soft" id="bbInfo"></div>
     </section>
     <section class="card" id="kl">
       <div class="row"><h2>อ่างคลองหลวง</h2><span class="chip cx" id="klChip">รอข้อมูล</span></div>
-      <div class="small soft">รัชชโลทร · ความจุปกติ 98 ล้าน ลบ.ม.</div>
+      <div class="small soft">ระบายลงคลองหลวง อ้อมเมืองด้านตะวันออก/เหนือ · ความจุปกติ 98 ล้าน ลบ.ม. (มีบานคุม เกิน 100% ได้)</div>
       <div class="big" style="margin-top:8px"><span id="klPct">–</span><small>%</small></div>
       <div class="bar"><i id="klBar" style="width:0"></i><span class="tick" style="left:calc(100% / 1.4)" title="100%"></span></div>
       <div class="small soft" id="klInfo"></div>
@@ -145,10 +146,20 @@ a{color:var(--accent-deep)}
   </section>
 
   <section class="card small">
+    <h2 style="font-size:.95rem">น้ำเข้าพนัสมาจากไหน</h2>
+    <ul class="soft">
+      <li><b>สายห้วยเกวียน</b> (เข้าเมืองฝั่งตะวันตกเฉียงใต้ ตัวหลักที่ท่วมรอบ 25–26 ก.ย.): ต้นน้ำคือ<b>อ่างบ้านบึง</b> · ห้วยเกวียนเองไม่มีสถานีวัด</li>
+      <li><b>สายคลองหลวง</b> (อ้อมเมืองด้านตะวันออก/เหนือ ใกล้สุดราว 3 กม.): <b>อ่างคลองหลวง</b> + บ่อเอกชนเล็กริมถนน 331 (หนองเสม็ด · อาหารสยาม ผลน้อย ไม่มีข้อมูล) · วัดที่บ้านท่าบุญมี</li>
+      <li>ไม่ไหลลงพนัส: อ่างคลองกระแส · อ่างฝั่งศรีราชา/ระยอง/ฉะเชิงเทรา</li>
+    </ul>
+    <p class="soft" style="margin:4px 0 0">ไล่ทางน้ำจากแผนที่ความสูงพื้นดิน (FABDEM) เทียบลำน้ำ OSM + ตัวเลขอ่างกรมชล · 5 ต.ค. 69 · ช่วงบ้านบึง→ห้วยเกวียนมั่นใจระดับกลาง</p>
+  </section>
+
+  <section class="card small">
     <h2 style="font-size:.95rem">เกณฑ์ที่ใช้</h2>
     <ul class="soft">
       <li>คลองหลวง: เฝ้าระวัง ≥16.8 ม. หรือ ≥32 ลบ.ม./วิ · อันตราย ≥17.0 ม. หรือ ≥40 (ตอนท่วม 25–26 ก.ย. 69 = 17.03 ม./40)</li>
-      <li>อ่างบ้านบึง: เฝ้าระวัง ≥90% · อันตราย ≥95%</li>
+      <li>อ่างบ้านบึง: เฝ้าระวัง ≥90% หรือจะเต็มภายใน 5 วัน · อันตราย ≥95%</li>
       <li>ฝน 1 ชม.: เฝ้าระวัง ≥20 มม. · อันตราย ≥35 มม. (ท่อในเมืองรับไม่ทัน)</li>
       <li>อ่างคลองหลวง: อันตรายเมื่อระบาย ≥2 ล้าน ลบ.ม./วัน (ปี 56 อ่างแตก 2.5 ล้าน/วัน น้ำเข้าเมือง)</li>
     </ul>
@@ -218,7 +229,13 @@ async function loadDams() {
   const pick = id => m.filter(x => x.dam.id === id && x.dam_storage != null).sort((a, b) => a.dam_date < b.dam_date ? 1 : -1)[0];
   const bb = pick(DAM_BB), kl = pick(DAM_KL), out = [];
   if (bb) {
-    const p = +bb.dam_storage_percent, lv = lvl(p, 90, 95);
+    const p = +bb.dam_storage_percent, st = +bb.dam_storage, room = st / p * 100 - st;
+    const net = (+bb.dam_inflow || 0) - (+bb.dam_released || 0), days = room > 0 && net > 0 ? room / net : null;
+    let lv = lvl(p, 90, 95);
+    if (room <= 0 || (days != null && days <= 5)) lv = Math.max(lv, 1);   // ล้นแล้ว/จะเต็มใน 5 วัน = เฝ้าระวัง
+    $("bbFull").textContent = room <= 0 ? "⚠️ เต็มแล้ว น้ำล้นทางระบายลงห้วยเกวียน"
+      : days != null ? `ว่างอีก ${room.toFixed(2)} ล้าน ลบ.ม. · ถ้าน้ำเข้าเท่านี้ เต็มใน ~${Math.round(days)} วัน`
+      : `ว่างอีก ${room.toFixed(2)} ล้าน ลบ.ม. · น้ำออก ≥ เข้า ยังไม่เต็ม`;
     $("bbPct").textContent = p.toFixed(1); $("bbBar").style.width = Math.min(p / 1.4, 100) + "%";
     $("bbInfo").innerHTML = `${bb.dam_storage} / ${bb.dam.normal_storage} ล้าน ลบ.ม. · เข้า <span class="num">${bb.dam_inflow ?? "–"}</span> ออก <span class="num">${bb.dam_released ?? "–"}</span> ล้าน/วัน · ${bb.dam_date.slice(8)}/${bb.dam_date.slice(5, 7)}`;
     chip("bbChip", lv); out.push({ lv, txt: `บ้านบึง ${p.toFixed(0)}%` });
