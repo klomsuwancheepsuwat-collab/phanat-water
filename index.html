@@ -79,7 +79,16 @@ a{color:var(--accent-deep)}
 .radarwrap{margin-top:10px;background:var(--surface-2);border-radius:8px;overflow:hidden}
 #radarCv{display:block;width:100%;height:auto;image-rendering:pixelated}
 .radarctl{display:flex;align-items:center;gap:10px;margin-top:8px}
-.radarctl input{flex:1;min-width:0;accent-color:var(--accent)}
+.radarctl .slidewrap{flex:1;min-width:0}
+.radarctl input{width:100%;margin:0;accent-color:var(--accent)}
+.radarwrap{border:2px solid transparent}
+.radarwrap.isfc{border:2px dashed var(--accent-deep)}
+.tl{display:grid;grid-template-columns:12fr 9fr;gap:2px;margin-top:2px;line-height:1.3}
+.tl span{border-top:3px solid var(--water);padding-top:2px;color:var(--ink-soft);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:.72rem}
+.tl span+span{border-top:3px dashed var(--accent-deep);text-align:right}
+.fcTxt{color:var(--accent-deep)}
+.fcbox{margin-top:10px;border:1px dashed var(--accent-deep);border-radius:8px;padding:8px}
+.fcbox .kv{margin-top:6px}
 .radarctl button{padding:6px 12px}
 .legend{display:flex;flex-wrap:wrap;gap:4px 14px;margin-top:6px;align-items:center}
 .legend i{display:inline-block;width:14px;height:0;border-top:2px solid;vertical-align:middle;margin-right:5px}
@@ -149,17 +158,24 @@ a{color:var(--accent-deep)}
 
   <section class="card" id="radar">
     <div class="row">
-      <div><h2>เรดาร์ฝน 2 ชม. ล่าสุด</h2><div class="small soft">ฝนกำลังตก/กำลังเข้า ลุ่มต้นน้ำคลองกลางเมือง · คลองหลวง · ตัวเมือง</div></div>
+      <div><h2>เรดาร์ฝน ย้อน 2 ชม. + พยากรณ์ 90 นาที</h2><div class="small soft">ภาพจริงย้อนหลัง 2 ชม. (ทุก 10 นาที) แล้วต่อภาพไปข้างหน้า 90 นาทีตามทิศ/ความเร็วที่กลุ่มฝนกำลังเคลื่อน · ไม่เห็นพายุที่จะก่อตัวใหม่</div></div>
       <span class="chip cx" id="radarChip">รอข้อมูล</span>
     </div>
-    <div class="radarwrap"><canvas id="radarCv" width="308" height="264" aria-label="ภาพเรดาร์ฝนรอบพนัสนิคม พร้อมขอบลุ่มน้ำ"></canvas></div>
+    <div class="radarwrap" id="radarWrap"><canvas id="radarCv" width="308" height="264" aria-label="ภาพเรดาร์ฝนรอบพนัสนิคม พร้อมขอบลุ่มน้ำ"></canvas></div>
     <div class="radarctl">
       <button id="radarPlay" type="button">▶ เล่น</button>
-      <input id="radarSlider" type="range" min="0" max="0" value="0" aria-label="เลือกเวลาภาพเรดาร์">
+      <div class="slidewrap">
+        <input id="radarSlider" type="range" min="0" max="0" value="0" aria-label="เลือกเวลาภาพเรดาร์ (ย้อนหลังถึงพยากรณ์)">
+        <div class="tl small" id="radarTl" aria-hidden="true"><span>จริง −2ชม.</span><span id="radarTlFc">+90 น.</span></div>
+      </div>
       <span class="num small" id="radarTime">–</span>
     </div>
     <div class="legend small soft"><span><i style="border-color:var(--accent-deep)"></i>ต้นน้ำกลางเมือง</span><span><i style="border-color:var(--water)"></i>คลองหลวง</span><span><i style="border-color:var(--red)"></i>ตัวเมือง 3 กม.</span><span class="ramp" title="ฟ้า = ฝนเบา · เหลือง ≈ 10–35 · ส้ม/แดง ≥ 35 มม./ชม."></span></div>
     <div class="kv" id="radarKv"></div>
+    <div id="radarFcBox" class="fcbox" hidden>
+      <div class="small fcTxt" style="font-weight:600">ฝนคาดใน 90 นาทีข้างหน้า (พยากรณ์ต่อภาพ)</div>
+      <div class="kv" id="radarFcKv" style="margin-top:6px"></div>
+    </div>
     <div class="small" id="radarNear" style="margin-top:8px;font-weight:600"></div>
     <div class="small soft" id="radarInfo" style="margin-top:4px"></div>
   </section>
@@ -188,6 +204,7 @@ a{color:var(--accent-deep)}
       <li>ฝน 1 ชม.: เฝ้าระวัง ≥20 มม. · อันตราย ≥35 มม. (ท่อในเมืองรับไม่ทัน)</li>
       <li>อ่างคลองหลวง: อันตรายเมื่อระบาย ≥2 ล้าน ลบ.ม./วัน (ปี 56 อ่างแตก 2.5 ล้าน/วัน น้ำเข้าเมือง)</li>
       <li>เรดาร์ฝน: เฝ้าระวังเมื่อฝน ≥20 มม./ชม. ครอบ ≥10% ของลุ่มใดลุ่มหนึ่ง หรือ ≥35 มม./ชม. แตะลุ่ม ≥3 ช่อง (~4 ตร.กม.) หรือกลุ่มฝนหนักห่าง ≤15 กม. จะถึงใน 1 ชม. · อันตรายเมื่อ ≥35 มม./ชม. ครอบ ≥25% ของลุ่มต้นน้ำกลางเมืองหรือตัวเมือง ติดกัน 2 ภาพขึ้นไป</li>
+      <li>เรดาร์พยากรณ์ (ต่อภาพ ถึง +60 นาที): เฝ้าระวังเมื่อคาดว่าฝน ≥20 มม./ชม. จะครอบ ≥10% ของลุ่มต้นน้ำกลางเมืองหรือตัวเมือง · อันตรายเมื่อคาดว่า ≥35 มม./ชม. จะครอบ ≥25% โดยนับเฉพาะกลุ่มฝนหนักที่เห็นจริงในภาพล่าสุดและภาพก่อนหน้า (กันหลอก) · ภาพ +70 ถึง +90 นาทีดูอย่างเดียว ไม่ใช้เตือน</li>
     </ul>
     <p class="soft" style="margin:8px 0 0">คลองกลางเมือง (น้ำหลักที่ท่วมเมืองรอบ ก.ย.) ไม่มีสถานีวัดระดับน้ำ เห็นได้แค่ฝนเรดาร์ในลุ่ม (ประเมินจากสีเรดาร์ คลาดได้ราว 2 เท่า) · ดูเพิ่ม <a href="https://www.rainviewer.com/map.html?loc=13.35,101.25,10" target="_blank" rel="noopener">เรดาร์ RainViewer</a> · <a href="https://www.thaiwater.net/weather/radar" target="_blank" rel="noopener">เรดาร์ thaiwater</a> · <a href="https://www.thaiwater.net/water/wl" target="_blank" rel="noopener">thaiwater</a></p>
     <p class="soft" id="foot" style="margin:6px 0 0">หน้านี้ดึงใหม่เองทุก 10 นาที</p>
@@ -317,7 +334,7 @@ async function loadFc() {
 }
 
 /* ── เรดาร์ฝน RainViewer (ฟรี ไม่ต้อง key · CORS เปิด) — ตรรกะเดียวกับ flood_watch.py (radar/radar_level) ดู RADAR-NOTES.md ──
-   ไทล์ z7 ≈ 1.19 กม./พิกเซล · API ฟรีให้แค่สี Universal Blue + ย้อน 2 ชม. ทุก 10 นาที (ไม่มีภาพพยากรณ์ล่วงหน้า) */
+   ไทล์ z7 ≈ 1.19 กม./พิกเซล · API ฟรีให้แค่สี Universal Blue + ย้อน 2 ชม. ทุก 10 นาที (ไม่มีภาพพยากรณ์ → ทำเองด้วยการเลื่อนภาพ nowcast()) */
 const RV_API = "https://api.rainviewer.com/public/weather-maps.json", RV_Z = 7, RV_PX_KM = 40075 / (2 ** RV_Z * 256) * Math.cos(13.35 * Math.PI / 180);
 const UB = "88ddee 6cd1eb 51c5e8 36bae5 1baee2 00a3e0 009ad5 0091ca 0088bf 007fb4 0077aa 0070a3 00699c 006295 005b8e 005588 005180 004e78 004a70 004768 ffee00 ffe000 ffd200 ffc500 ffb700 ffaa00 ff9f00 ff9500 ff8b00 ff8100 ff4400 f23600 e62800 d91b00 cd0d00 c10000 a80000 8f0000 760000 5d0000 ffaaff ff9fff ff95ff ff8bff ff81ff ff77ff ff6cff ff62ff ff58ff ff4eff".split(" ");
 const UB_DBZ = new Map(UB.map((h, i) => [parseInt(h, 16), 15 + i])); UB_DBZ.set(0xffffff, 65); UB_DBZ.set(0x00ff00, 75);
@@ -328,20 +345,103 @@ const BASIN_RLE = {   // สร้างจาก D8/FABDEM ด้วย make_ra
 };
 const BASIN_NAME = { hk: "ต้นน้ำกลางเมือง", kl: "คลองหลวง", town: "ตัวเมือง" };
 const RTH = { y: 20, r: 35, yf: .10, rf: .25, minPx: 3, ring: 40, near: 15, eta: 60, stale: 40 };
+// พยากรณ์ต่อภาพ — ค่าเดียวกับ NC_TH ใน flood_watch.py (ring 100 กม. · ฝนวิ่ง ≤60 กม./ชม. · คู่ภาพ 20-40 นาที · เตือนถึง +60 นาที)
+const NC = { ring: 100, vmax: 60, pairMin: [20, 40], coarse: 4, minRain: 20, gate: 20, leads: [10, 20, 30, 40, 50, 60, 70, 80, 90], decay: 0, warnLead: 60 };
 const BASIN = Object.fromEntries(Object.entries(BASIN_RLE).map(([k, s]) => [k, s.split(";").flatMap(part => {
   const [y, runs] = part.split(":"); return runs.split(",").flatMap(r => { const [a, b] = r.split("-").map(Number); return Array.from({ length: b - a + 1 }, (_, i) => [a + i, +y]); });
 })]));
 const dbz2mm = d => d < 15 ? 0 : Math.pow(Math.pow(10, Math.min(d, 50) / 10) / 250, 1 / 1.2);   // Z=250R^1.2 ฝนเขตร้อน · ตัดที่ 50 dBZ
 const llpx = (lat, lon) => { const n = 2 ** RV_Z * 256, la = lat * Math.PI / 180; return [(lon + 180) / 360 * n, (1 - Math.log(Math.tan(la) + 1 / Math.cos(la)) / Math.PI) / 2 * n]; };
-const RV = { frames: [], idx: 0, timer: null };
+const rnd = x => Math.floor(x + .5);
+const RV = { frames: [], idx: 0, timer: null, nPast: 0 };
 function rvImg(url) { return new Promise((ok, no) => { const im = new Image(); im.crossOrigin = "anonymous"; im.onload = () => ok(im); im.onerror = () => no(new Error("ไทล์เรดาร์")); im.src = url; }); }
+
+/* ── หาเวกเตอร์เคลื่อนที่ (สูตรเดียวกับ nc_motion ใน python ทุกขั้น — ผลรวมเป็นจำนวนเต็ม เทียบแบบคูณไขว้ → ได้เลขเดียวกัน) ── */
+function rainSet(d, w, h) { const list = []; for (let i = 0; i < w * h; i++) if (d[i]) list.push(i); return { d, list, w, h }; }
+function ncCost(A, B, dx, dy) {
+  const w = A.w, h = A.h; let c = 0, n = 0;
+  for (const i of A.list) { const qx = i % w + dx, qy = (i / w | 0) + dy; if (qx >= 0 && qx < w && qy >= 0 && qy < h) { c += Math.abs(A.d[i] - B.d[qy * w + qx]); n++; } }
+  for (const i of B.list) { const px = i % w - dx, py = (i / w | 0) - dy; if (px >= 0 && px < w && py >= 0 && py < h && !A.d[py * w + px]) { c += B.d[i]; n++; } }
+  return [c, n];
+}
+function ncBest(A, B, cx, cy, S) {
+  let best = null;
+  for (let dy = cy - S; dy <= cy + S; dy++) for (let dx = cx - S; dx <= cx + S; dx++) {
+    const [c, n] = ncCost(A, B, dx, dy);
+    if (n && (!best || c * best[3] < best[2] * n)) best = [dx, dy, c, n];
+  }
+  return best;
+}
+function ncMotion(a, b, w, h, dt) {   // a,b = dBZ (ตัดที่ 50) Int16Array w×h · → [u,v] พิกเซล/นาที หรือ null
+  const k = NC.coarse, S = Math.floor(NC.vmax / 60 * dt / RV_PX_KM) + 1, wc = Math.floor((w - 1) / k) + 1, hc = Math.floor((h - 1) / k) + 1;
+  const coarse = d => { const o = new Int32Array(wc * hc); for (let i = 0; i < w * h; i++) if (d[i]) o[Math.floor((i / w | 0) / k) * wc + Math.floor(i % w / k)] += d[i]; return rainSet(o, wc, hc); };
+  let bb = ncBest(coarse(a), coarse(b), 0, 0, Math.floor(S / k) + 1);
+  const A = rainSet(a, w, h), B = rainSet(b, w, h);
+  if (bb) bb = ncBest(A, B, bb[0] * k, bb[1] * k, k - 1);
+  if (!bb) return null;
+  const [dx, dy] = bb, c0 = bb[2] / bb[3];
+  const nb = [[-1, 0], [1, 0], [0, -1], [0, 1]].map(([ex, ey]) => { const [c, n] = ncCost(A, B, dx + ex, dy + ey); return n ? c / n : c0; });
+  const sub = (cm, cp) => { const den = cm - 2 * c0 + cp; return den <= 0 ? 0 : Math.max(-.5, Math.min(.5, (cm - cp) / (2 * den))); };
+  return [(dx + sub(nb[0], nb[1])) / dt, (dy + sub(nb[2], nb[3])) / dt];
+}
+function compass(u, v) {
+  if (Math.hypot(u, v) * 60 * RV_PX_KM < 3) return "แทบไม่เคลื่อน";
+  const b = (Math.atan2(u, -v) * 180 / Math.PI + 360) % 360;
+  return "ไปทาง" + ["เหนือ", "ตะวันออกเฉียงเหนือ", "ตะวันออก", "ตะวันออกเฉียงใต้", "ใต้", "ตะวันตกเฉียงใต้", "ตะวันตก", "ตะวันตกเฉียงเหนือ"][Math.floor((b + 22.5) / 45) % 8];
+}
+/* พยากรณ์ = เลื่อนภาพจริงล่าสุดไปข้างหน้าตามเวกเตอร์ (ไม่ทำโต/สลาย) — เหมือน nowcast() ใน python */
+function nowcast(frames, W, H, X0, Y0) {
+  const uniq = []; for (const f of frames) if (!uniq.length || f.sig !== uniq[uniq.length - 1].sig) uniq.push(f);
+  const tl = frames[frames.length - 1].t, G = uniq[uniq.length - 1], ti = G.t;
+  const cap = d => d.map(x => Math.min(x, 50));
+  const Gc = cap(G.dbz), vs = [], dts = [];
+  let n20 = 0; for (let i = 0; i < W * H; i++) if (G.dbz[i] >= 20) n20++;
+  if (n20 >= NC.minRain) {
+    let cand = uniq.slice(0, -1).filter(f => (ti - f.t) / 60 >= NC.pairMin[0] && (ti - f.t) / 60 <= NC.pairMin[1]);
+    if (!cand.length) cand = uniq.slice(0, -1).filter(f => (ti - f.t) / 60 >= 10 && (ti - f.t) / 60 <= 60).slice(-2);
+    for (const f of cand) { const m = ncMotion(cap(f.dbz), Gc, W, H, (ti - f.t) / 60); if (m) { vs.push(m); dts.push(Math.round((ti - f.t) / 60)); } }
+  }
+  let u = 0, v = 0; if (vs.length) { for (const m of vs) u += m[0]; u /= vs.length; for (const m of vs) v += m[1]; v /= vs.length; }
+  let spread = 0; for (const a of vs) for (const b of vs) spread = Math.max(spread, Math.hypot(a[0] - b[0], a[1] - b[1]));
+  spread *= 60 * RV_PX_KM;
+  if (spread > NC.gate) { u = 0; v = 0; }   // คู่ภาพให้ทิศขัดกัน = ฝนก่อตัว/สลายเร็ว → ใช้ภาพนิ่ง
+  const mode = !vs.length ? "norain" : spread > NC.gate ? "unsure" : Math.hypot(u, v) * 60 * RV_PX_KM < 3 ? "still" : "move";
+  // กลุ่มฝนหนักจริงในภาพล่าสุด (≥3 ช่องติดกัน) ที่เห็นในภาพก่อนหน้าตามแนวเคลื่อนที่ด้วย → ใช้ยืนยันเกณฑ์แดง
+  const P = uniq.length >= 2 && ti - uniq[uniq.length - 2].t <= 1800 ? uniq[uniq.length - 2] : null;
+  const at = (d, x, y) => x >= 0 && x < W && y >= 0 && y < H ? d[y * W + x] : 0;
+  const hv = (d, x, y) => dbz2mm(at(d, x, y)) >= RTH.r, ok = new Uint8Array(W * H);
+  if (P) {
+    const tp = (ti - P.t) / 60, ox = rnd(u * tp), oy = rnd(v * tp);
+    for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) {
+      if (!hv(G.dbz, x, y)) continue;
+      let n = 0, seen = false;
+      for (let a = -1; a <= 1; a++) for (let b = -1; b <= 1; b++) { if (hv(G.dbz, x + a, y + b)) n++; if (hv(P.dbz, x - ox + a, y - oy + b)) seen = true; }
+      if (n >= 3 && seen) ok[y * W + x] = 1;
+    }
+  }
+  const steps = NC.leads.map(L => {
+    const tau = L + (tl - ti) / 60, sx = rnd(u * tau), sy = rnd(v * tau), dec = NC.decay * tau, st = {};
+    for (const [k, ps] of Object.entries(BASIN)) {
+      let mx = 0, sum = 0, c20 = 0, c35 = 0, c35c = 0;
+      for (const [X, Y] of ps) {
+        const x = X - X0 - sx, y = Y - Y0 - sy, d = at(G.dbz, x, y), val = d ? dbz2mm(d - dec) : 0;
+        mx = Math.max(mx, val); sum += val; if (val >= RTH.y) c20++; if (val >= RTH.r) { c35++; if (at(ok, x, y)) c35c++; }
+      }
+      st[k] = { max: mx, mean: sum / ps.length, n20: c20, f20: c20 / ps.length, n35: c35, f35: c35 / ps.length, f35c: c35c / ps.length };
+    }
+    return { L, sx, sy, st, t: tl + L * 60 };
+  });
+  const acc90 = {}, max90 = {};
+  for (const k in BASIN) { acc90[k] = steps.reduce((a, s) => a + s.st[k].mean * 10 / 60, 0); max90[k] = Math.max(...steps.map(s => s.st[k].max)); }
+  return { u, v, kmh: Math.hypot(u, v) * 60 * RV_PX_KM, mode, dir: compass(u, v), spread, pairs: dts, ti, prev: !!P, steps, acc90, max90, src: G };
+}
 
 async function loadRadar() {
   const meta = await j(RV_API), past = (meta.radar && meta.radar.past) || [];
   if (!past.length) throw new Error("ไม่มีเฟรม");
-  const all = Object.values(BASIN).flat(), ring = Math.ceil(RTH.ring / RV_PX_KM) + 1;
+  const all = Object.values(BASIN).flat(), ring = Math.floor(RTH.ring / RV_PX_KM) + 1, big = Math.floor(NC.ring / RV_PX_KM) + 1;
   const bx0 = Math.min(...all.map(p => p[0])), bx1 = Math.max(...all.map(p => p[0])), by0 = Math.min(...all.map(p => p[1])), by1 = Math.max(...all.map(p => p[1]));
-  const X0 = bx0 - ring, X1 = bx1 + ring, Y0 = by0 - ring, Y1 = by1 + ring, W = X1 - X0 + 1, H = Y1 - Y0 + 1;
+  const X0 = bx0 - big, X1 = bx1 + big, Y0 = by0 - big, Y1 = by1 + big, W = X1 - X0 + 1, H = Y1 - Y0 + 1;
   const tx0 = Math.floor(X0 / 256), tx1 = Math.floor(X1 / 256), ty0 = Math.floor(Y0 / 256), ty1 = Math.floor(Y1 / 256);
   const target = BASIN.hk.concat(BASIN.town);
   const frames = await Promise.all(past.map(async f => {
@@ -350,7 +450,7 @@ async function loadRadar() {
     const ims = [];
     for (let tx = tx0; tx <= tx1; tx++) for (let ty = ty0; ty <= ty1; ty++) ims.push(rvImg(`${meta.host}${f.path}/256/${RV_Z}/${tx}/${ty}/2/0_0.png`).then(im => cx.drawImage(im, (tx - tx0) * 256, (ty - ty0) * 256)));
     await Promise.all(ims);
-    const img = cx.getImageData(X0 - tx0 * 256, Y0 - ty0 * 256, W, H), px = img.data, dbz = new Int8Array(W * H);
+    const img = cx.getImageData(X0 - tx0 * 256, Y0 - ty0 * 256, W, H), px = img.data, dbz = new Int16Array(W * H);
     let h = 2166136261;
     for (let i = 0; i < W * H; i++) {
       if (px[i * 4 + 3] === 255) { const v = UB_DBZ.get(px[i * 4] << 16 | px[i * 4 + 1] << 8 | px[i * 4 + 2]); if (v) dbz[i] = v; }
@@ -361,8 +461,8 @@ async function loadRadar() {
       const v = ps.map(([x, y]) => mm(x, y)), n35 = v.filter(x => x >= RTH.r).length;
       st[k] = { max: Math.max(...v), f20: v.filter(x => x >= RTH.y).length / v.length, f35: n35 / v.length, n35, mean: v.reduce((a, b) => a + b, 0) / v.length };
     }
-    // กลุ่มฝนหนัก ≥35 มม./ชม. ที่ติดกัน ≥3 ช่อง (ตัดจุดเดี่ยว/clutter) → ระยะถึงต้นน้ำกลางเมือง/ตัวเมือง
-    const heavy = new Set(); for (let y = Y0; y <= Y1; y++) for (let x = X0; x <= X1; x++) if (mm(x, y) >= RTH.r) heavy.add(x * 1e5 + y);
+    // กลุ่มฝนหนัก ≥35 มม./ชม. ที่ติดกัน ≥3 ช่อง (ตัดจุดเดี่ยว/clutter) ในวง 40 กม. → ระยะถึงต้นน้ำกลางเมือง/ตัวเมือง
+    const heavy = new Set(); for (let y = by0 - ring; y <= by1 + ring; y++) for (let x = bx0 - ring; x <= bx1 + ring; x++) if (mm(x, y) >= RTH.r) heavy.add(x * 1e5 + y);
     let d = null;
     for (const key of heavy) {
       const x = Math.floor(key / 1e5), y = key % 1e5; let n = 0;
@@ -370,7 +470,7 @@ async function loadRadar() {
       if (n < 3) continue;
       for (const [a, b] of target) { const dd = Math.hypot(x - a, y - b) * RV_PX_KM; if (d == null || dd < d) d = dd; }
     }
-    return { t: f.time, st, d, sig: h, img };
+    return { t: f.time, st, d, sig: h, img, dbz };
   }));
   // สรุป (เหมือน radar() / radar_level() ฝั่ง python)
   const last = frames[frames.length - 1], tl = last.t, age = (Date.now() / 1e3 - tl) / 60;
@@ -382,23 +482,42 @@ async function loadRadar() {
     near = { d: last.d, dOld: old ? old.d : null, eta: null };
     if (old && last.d > 0 && old.d - last.d >= 2) near.eta = last.d / ((old.d - last.d) / ((tl - old.t) / 60));
   }
-  let lv = 0;
+  let nc = null, ncErr = null;
+  try { nc = nowcast(frames, W, H, X0, Y0); } catch (e) { ncErr = e; console.error("พยากรณ์เรดาร์ล้ม", e); }
+  let lv = 0, why = null;
   if (age <= RTH.stale) {
-    if (["hk", "town"].some(k => { const h = uniq.map(f => f.st[k].f35); return h[h.length - 1] >= RTH.rf && h.slice(-3, -1).some(x => x >= RTH.rf); })) lv = 2;
-    else if (Object.values(last.st).some(s => s.f20 >= RTH.yf || s.n35 >= RTH.minPx) || (near && near.d <= RTH.near && near.eta != null && near.eta <= RTH.eta)) lv = 1;
+    const soon = nc ? nc.steps.filter(s => s.L <= NC.warnLead) : [];
+    const redObs = ["hk", "town"].find(k => { const h = uniq.map(f => f.st[k].f35); return h[h.length - 1] >= RTH.rf && h.slice(-3, -1).some(x => x >= RTH.rf); });
+    let redFc = null; for (const s of soon) { const k = ["hk", "town"].find(k => s.st[k].f35c >= RTH.rf); if (k) { redFc = [k, s.L]; break; } }
+    let yFc = null; for (const s of soon) { const k = ["hk", "town"].find(k => s.st[k].f20 >= RTH.yf && s.st[k].n20 >= RTH.minPx); if (k) { yFc = [k, s.L]; break; } }
+    if (redObs) { lv = 2; why = "ฝนหนักมากกำลังตกในลุ่ม" + BASIN_NAME[redObs]; }
+    else if (redFc) { lv = 2; why = `พยากรณ์ฝนหนักมากเข้าลุ่ม${BASIN_NAME[redFc[0]]}ใน ~${redFc[1]} นาที`; }
+    else if (Object.values(last.st).some(s => s.f20 >= RTH.yf || s.n35 >= RTH.minPx)) lv = 1;
+    else if (yFc) { lv = 1; why = `พยากรณ์ฝน ≥20 มม./ชม. เข้าลุ่ม${BASIN_NAME[yFc[0]]}ใน ~${yFc[1]} นาที`; }
+    else if (!nc && near && near.d <= RTH.near && near.eta != null && near.eta <= RTH.eta) lv = 1;
   }
-  // แสดงผล
-  RV.frames = frames; RV.view = { X0, Y0, W, bx0: bx0 - 14, by0: by0 - 14, bw: bx1 - bx0 + 29, bh: by1 - by0 + 29 };
-  const sl = $("radarSlider"); sl.max = frames.length - 1; sl.value = frames.length - 1; drawRadar(frames.length - 1);
+  // แสดงผล: เฟรมจริง 13 ภาพ + เฟรมพยากรณ์ (เลื่อนภาพล่าสุด) ต่อท้าย
+  const fc = nc ? nc.steps.map(s => ({ t: s.t, fc: true, L: s.L, sx: s.sx, sy: s.sy, img: last.img })) : [];
+  RV.frames = frames.concat(fc); RV.nPast = frames.length; RV.view = { X0, Y0, W, bx0: bx0 - 14, by0: by0 - 14, bw: bx1 - bx0 + 29, bh: by1 - by0 + 29 };
+  const sl = $("radarSlider"); sl.max = RV.frames.length - 1; sl.value = frames.length - 1; drawRadar(frames.length - 1);
+  $("radarTl").style.gridTemplateColumns = `${frames.length - 1}fr ${Math.max(fc.length, .001)}fr`; $("radarTlFc").hidden = !fc.length;
   if (age > RTH.stale) chip("radarChip", 0, "ภาพเก่า"); else chip("radarChip", lv);
   $("radarKv").innerHTML = ["hk", "town", "kl"].map(k => { const s = last.st[k];
-    return `<div><b>${s.max.toFixed(0)}</b><span>${BASIN_NAME[k]} แรงสุด มม./ชม.<br>≥20 ครอบ ${(s.f20 * 100).toFixed(0)}% · 2 ชม. ${acc2(k).toFixed(0)} มม.</span></div>`; }).join("");
-  $("radarNear").textContent = !near ? "ไม่มีกลุ่มฝนหนัก (≥35 มม./ชม.) ในรัศมี 40 กม." : near.d === 0 ? "มีกลุ่มฝนหนักอยู่ในลุ่มต้นน้ำกลางเมือง/ตัวเมืองแล้ว"
-    : `กลุ่มฝนหนักใกล้สุดห่างต้นน้ำกลางเมือง/เมือง ${near.d.toFixed(0)} กม.` + (near.eta != null ? ` · 30 นาทีก่อน ${near.dOld.toFixed(0)} กม. → ถึงใน ~${near.eta.toFixed(0)} นาที` : near.dOld != null ? " · ยังไม่เข้าใกล้" : "");
-  $("radarInfo").textContent = `ภาพล่าสุด ${new Date(tl * 1e3).toTimeString().slice(0, 5)} น.` + (age > RTH.stale ? ` · ⚠️ เก่า ${age.toFixed(0)} นาที ไม่ใช้ตัดสิน` : "") +
-    " · RainViewer · ฝนประเมินจากสีเรดาร์ คลาดได้ราว 2 เท่า · ไม่มีภาพพยากรณ์ล่วงหน้า ดูทิศฝนจากการกดเล่น";
+    return `<div><b>${s.max.toFixed(0)}</b><span>${BASIN_NAME[k]} แรงสุดตอนนี้ มม./ชม.<br>≥20 ครอบ ${(s.f20 * 100).toFixed(0)}% · 2 ชม. ${acc2(k).toFixed(0)} มม.</span></div>`; }).join("");
+  if (nc) {
+    $("radarFcKv").innerHTML = ["hk", "town", "kl"].map(k => {
+      const first = nc.steps.find(s => s.st[k].max >= 1);
+      return `<div><b>${nc.max90[k].toFixed(0)}</b><span>${BASIN_NAME[k]} แรงสุด มม./ชม.<br>สะสมเฉลี่ยลุ่ม ${nc.acc90[k].toFixed(0)} มม.` + (first ? ` · เริ่ม ~${first.L} นาที` : " · ไม่มีฝนเข้า") + `</span></div>`; }).join("");
+    $("radarFcBox").hidden = false;
+  } else $("radarFcBox").hidden = true;
+  const mv = !nc ? "" : { norain: "", still: "กลุ่มฝนแทบไม่เคลื่อน", unsure: "ฝนก่อตัว/สลายเร็ว หาทิศไม่ได้ ภาพพยากรณ์ = ภาพล่าสุดนิ่งๆ", move: `กลุ่มฝนเคลื่อน${nc.dir} ~${nc.kmh.toFixed(0)} กม./ชม.` }[nc.mode];
+  $("radarNear").textContent = (why ? why + " · " : "") + (!near ? "ไม่มีกลุ่มฝนหนัก (≥35 มม./ชม.) ในรัศมี 40 กม." : near.d === 0 ? "มีกลุ่มฝนหนักอยู่ในลุ่มต้นน้ำกลางเมือง/ตัวเมืองแล้ว"
+    : `กลุ่มฝนหนักใกล้สุดห่างต้นน้ำกลางเมือง/เมือง ${near.d.toFixed(0)} กม.` + (nc ? "" : near.eta != null ? ` · 30 นาทีก่อน ${near.dOld.toFixed(0)} กม. → ถึงใน ~${near.eta.toFixed(0)} นาที` : near.dOld != null ? " · ยังไม่เข้าใกล้" : "")) + (mv ? " · " + mv : "");
+  $("radarInfo").textContent = `ภาพจริงล่าสุด ${new Date(tl * 1e3).toTimeString().slice(0, 5)} น.` + (nc && nc.ti !== tl ? ` (เรดาร์ยังไม่อัปเดต ใช้สแกน ${new Date(nc.ti * 1e3).toTimeString().slice(0, 5)})` : "") + (age > RTH.stale ? ` · ⚠️ เก่า ${age.toFixed(0)} นาที ไม่ใช้ตัดสิน` : "") +
+    " · RainViewer · ฝนประเมินจากสีเรดาร์ คลาดได้ราว 2 เท่า" + (nc ? "" : " · ทำภาพพยากรณ์ไม่ได้รอบนี้ (" + (ncErr ? ncErr.message : "?") + ")");
   const hot = ["hk", "town", "kl"].filter(k => last.st[k].f20 >= RTH.yf || last.st[k].n35 >= RTH.minPx).map(k => BASIN_NAME[k]);
-  return { lv, txt: lv ? "เรดาร์: " + (hot.length ? "ฝนหนักในลุ่ม" + hot.join("/") : "กลุ่มฝนหนักกำลังเข้า") : null };
+  RV.dbg = { nc: nc && { u: nc.u, v: nc.v, kmh: nc.kmh, mode: nc.mode, spread: nc.spread, dir: nc.dir, pairs: nc.pairs, acc90: nc.acc90, max90: nc.max90, steps: nc.steps.map(s => ({ L: s.L, sx: s.sx, sy: s.sy, st: s.st })) }, lv, why, last: last.st, near };
+  return { lv, txt: lv ? "เรดาร์: " + (why || (hot.length ? "ฝนหนักในลุ่ม" + hot.join("/") : "กลุ่มฝนหนักกำลังเข้า")) : null };
 }
 
 function drawRadar(i) {
@@ -407,7 +526,15 @@ function drawRadar(i) {
   const cx = cv.getContext("2d"), css = getComputedStyle(document.documentElement), c = n => css.getPropertyValue(n).trim();
   const small = document.createElement("canvas"); small.width = f.img.width; small.height = f.img.height; small.getContext("2d").putImageData(f.img, 0, 0);
   cx.imageSmoothingEnabled = false; cx.clearRect(0, 0, cv.width, cv.height);
-  cx.drawImage(small, v.bx0 - v.X0, v.by0 - v.Y0, v.bw, v.bh, 0, 0, cv.width, cv.height);
+  if (f.fc) {   // ภาพพยากรณ์ = ภาพจริงล่าสุดเลื่อนไป (sx,sy) · จางลงนิด + ลายเส้นทแยง ให้ไม่สับสนกับภาพจริง
+    cx.globalAlpha = .78;
+    const ox = f.sx, oy = f.sy;   // ปลายทาง p = ต้นทาง + shift → วาดภาพต้นทางชดเชยกลับ
+    cx.drawImage(small, 0, 0, small.width, small.height, (v.X0 - v.bx0 + ox) * S, (v.Y0 - v.by0 + oy) * S, small.width * S, small.height * S);
+    cx.globalAlpha = 1;
+    cx.save(); cx.strokeStyle = c("--ink-soft"); cx.globalAlpha = .12; cx.lineWidth = 1; cx.beginPath();
+    for (let k = -cv.height; k < cv.width; k += 10) { cx.moveTo(k, 0); cx.lineTo(k + cv.height, cv.height); }
+    cx.stroke(); cx.restore();
+  } else cx.drawImage(small, v.bx0 - v.X0, v.by0 - v.Y0, v.bw, v.bh, 0, 0, cv.width, cv.height);
   const P = (x, y) => [(x - v.bx0) * S, (y - v.by0) * S];
   [["kl", "--water"], ["hk", "--accent-deep"], ["town", "--red"]].forEach(([k, col]) => {   // ขอบลุ่ม = ด้านพิกเซลที่ติดนอกลุ่ม
     const s = new Set(BASIN[k].map(([x, y]) => x * 1e5 + y)); cx.beginPath();
@@ -427,7 +554,15 @@ function drawRadar(i) {
     cx.strokeStyle = c("--surface"); cx.lineWidth = 3; cx.lineJoin = "round"; cx.strokeText(t, px + 5, py - 4); cx.fillText(t, px + 5, py - 4);
   });
   const L = 10 / RV_PX_KM * S, y0 = cv.height - 10; cx.fillRect(10, y0, L, 2); cx.fillText("10 กม.", 10, y0 - 4); cx.fillText("N ↑", cv.width - 26, 14);
-  const d = new Date(f.t * 1e3); $("radarTime").textContent = d.toTimeString().slice(0, 5) + (i === RV.frames.length - 1 ? " ล่าสุด" : "");
+  if (f.fc) {   // ป้ายมุมซ้ายบน
+    const t = `พยากรณ์ +${f.L} นาที`; cx.font = "600 13px Sarabun, sans-serif";
+    const w = cx.measureText(t).width + 16; cx.fillStyle = c("--accent-deep"); cx.beginPath(); cx.roundRect ? cx.roundRect(8, 8, w, 22, 11) : cx.rect(8, 8, w, 22); cx.fill();
+    cx.fillStyle = "#fff"; cx.fillText(t, 16, 24);
+  }
+  $("radarWrap").classList.toggle("isfc", !!f.fc);
+  const d = new Date(f.t * 1e3), hm = d.toTimeString().slice(0, 5);
+  $("radarTime").textContent = f.fc ? `${hm} พยากรณ์ +${f.L}` : hm + (i === RV.nPast - 1 ? " ล่าสุด" : "");
+  $("radarTime").classList.toggle("fcTxt", !!f.fc);
 }
 $("radarSlider").addEventListener("input", e => { stopRadar(); drawRadar(+e.target.value); });
 function stopRadar() { clearInterval(RV.timer); RV.timer = null; $("radarPlay").textContent = "▶ เล่น"; }
