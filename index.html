@@ -297,7 +297,7 @@ ul{margin:6px 0 0;padding-left:1.1rem}
           <div class="meta"><span class="tag t-real">วัดจริง</span><span class="when" id="klWhen"></span></div></div>
         <span class="chip cx" id="klChip">รอข้อมูล</span>
       </div>
-      <div class="hl"><span class="unit">ระบาย</span><span class="big" id="klRel">–</span><span class="unit">/ <b class="num" style="color:var(--red)">2.0</b> ล้าน ลบ.ม./วัน</span></div>
+      <div class="hl"><span class="unit">ระบาย</span><span class="big" id="klRel">–</span><span class="unit">/ <b class="num" style="color:var(--red)">4.5</b> ล้าน ลบ.ม./วัน</span></div>
       <div id="klViz"></div>
       <p class="say" id="klSay"></p>
       <div class="note" id="klInfo"></div>
@@ -359,6 +359,7 @@ ul{margin:6px 0 0;padding-left:1.1rem}
         <summary><span>ฝนพยากรณ์ 5 วัน</span><span class="tag t-fc">พยากรณ์</span></summary>
         <div class="body">
           <div class="fc" id="fc"></div>
+          <div class="small" id="fcSum" style="margin-top:6px"></div>
           <div class="note">ECMWF · จุดออฟฟิศ · แบบจำลองมักให้ฝนต่ำกว่าจริง 1.3–4 เท่า ใช้ดูแนวโน้ม · <span class="when" id="fcWhen"></span></div>
         </div>
       </details>
@@ -380,7 +381,7 @@ ul{margin:6px 0 0;padding-left:1.1rem}
             <li>คลองกลางเมืองพนัส (แบบจำลอง, ค่าสูงสุดใน 72 ชม.): เฝ้าระวัง ≥35% · ใกล้อันตราย ≥55% · อันตราย ≥75% ของยอด ก.ย.69</li>
             <li>จุด A (เสี่ยเคาะ 5 ต.ค. 69): เฝ้าระวังเมื่อผิวน้ำต่ำกว่าตลิ่ง ≤0.50 ม. · อันตรายเมื่อถึงตลิ่ง/ล้น · อ้างอิง ก.ย.69: 25 ก.ย. ต่ำกว่าตลิ่ง 0.10 · 26 ก.ย. 23:00 เริ่มล้น +0.10 · 27–29 ก.ย. สูงสุด +0.30–0.50</li>
             <li>อ่างบ้านบึง: เฝ้าระวัง ≥90% หรือจะเต็มภายใน 5 วัน · อันตราย ≥95%</li>
-            <li>อ่างคลองหลวง: อันตรายเมื่อระบาย ≥2 ล้าน ลบ.ม./วัน (ปี 56 อ่างแตก 2.5 ล้าน/วัน น้ำเข้าเมือง) · % ความจุเกิน 100 ได้ ไม่ใช้ตัดสิน</li>
+            <li>อ่างคลองหลวง (ปริมาณระบาย ล้าน ลบ.ม./วัน): เฝ้าระวัง ≥1.5 · ใกล้อันตราย ≥2.0 · อันตราย ≥4.5 — อิงปี 56 ที่ยังไม่มีอ่าง น้ำจากเกาะจันทร์ลงมา ~5 ล้าน/วัน (ท่วมรอบ 17 ต.ค.) และ 8–11 ล้าน/วัน (ท่วมรอบ 6–7 ต.ค.) · ค่าปี 56 เป็นค่าจากแบบจำลอง ไม่มีค่าวัดจริง คลาดได้ ~2 เท่า · % ความจุเกิน 100 ได้ ไม่ใช้ตัดสิน</li>
             <li>ฝน 1 ชม.: เฝ้าระวัง ≥20 มม. · อันตราย ≥35 มม. (ท่อในเมืองรับไม่ทัน)</li>
             <li>เรดาร์ฝน: เฝ้าระวังเมื่อฝน ≥20 มม./ชม. ครอบ ≥10% ของลุ่มใดลุ่มหนึ่ง หรือ ≥35 มม./ชม. แตะลุ่ม ≥3 ช่อง (~4 ตร.กม.) หรือกลุ่มฝนหนักห่าง ≤15 กม. จะถึงใน 1 ชม. · อันตรายเมื่อ ≥35 มม./ชม. ครอบ ≥25% ของลุ่มต้นน้ำกลางเมืองหรือตัวเมือง ติดกัน 2 ภาพขึ้นไป</li>
             <li>เรดาร์พยากรณ์ (ต่อภาพ ถึง +60 นาที): เฝ้าระวังเมื่อคาดว่าฝน ≥20 มม./ชม. จะครอบ ≥10% ของลุ่มต้นน้ำกลางเมืองหรือตัวเมือง · อันตรายเมื่อคาดว่า ≥35 มม./ชม. จะครอบ ≥25% โดยนับเฉพาะกลุ่มฝนหนักที่เห็นจริงในภาพล่าสุดและภาพก่อนหน้า · ภาพ +70 ถึง +90 นาทีดูอย่างเดียว ไม่ใช้เตือน</li>
@@ -405,6 +406,7 @@ const API = "https://api-v3.thaiwater.net/api/v1/thaiwater30";
 const OFFICE = [13.445963, 101.176828];
 const KGT = 504997, BPK = 154, KGT_BANK = 18.37, BPK_BANK = 1.665, BPK_Y = 1.4;
 const DAM_KL = 58864, DAM_BB = 622;
+const KL_TH = { y: 1.5, o: 2.0, r: 4.5 };   // ตรงกับ flood_watch.py TH["kl_rel"]
 const LV_TXT = ["ปกติ", "เฝ้าระวัง", "อันตราย"];
 const $ = id => document.getElementById(id);
 const pad = n => String(n).padStart(2, "0");
@@ -587,7 +589,7 @@ function renderVg(st) {
   const top = Math.max(120, Math.ceil(((v.index_hi || mx) + 10) / 10) * 10), close = now != null && Math.abs(mx - now) < 4;
   $("vgViz").innerHTML = hbar({ min: 0, max: top, h: 104, ty: 36, th: 20, aria: `ดัชนีคลองกลางเมืองพนัส ตอนนี้ ${now}% สูงสุด 72 ชม. ${mx}%`,
     zones: [{ a: 0, b: th.y, c: "var(--zone-g)", label: "ปลอดภัย" }, { a: th.y, b: th.o, c: "var(--zone-y)", label: "เฝ้าระวัง" }, { a: th.o, b: th.r, c: "var(--zone-o)", label: "ใกล้อันตราย" }, { a: th.r, b: top, c: "var(--zone-r)", label: "อันตราย" }],
-    refs: [{ v: 100, label: "ก.ย.69 = 100" }],
+    refs: [{ v: 100, label: "ก.ย.69 = 100" }, { v: 40, label: "รอบ 1 ~40", anchor: "start", below: true }, { v: 20, label: "ปี 56 รอบ 2 ~20", anchor: "end", below: true }],
     ticks: [th.y, th.o, th.r].map(t => ({ v: t, c: "var(--surface)", label: String(t), tc: "var(--ink-soft)", lw: 20 })),
     marks: [now != null && !close ? { v: now, label: `ตอนนี้ ${now.toFixed(0)}%` } : null,
       { v: mx, pos: close ? "above" : "below", hollow: true, dy: 36, label: close ? `ตอนนี้ ${now.toFixed(0)}% · สูงสุด 72 ชม. ${mx.toFixed(0)}%` : `สูงสุด 72 ชม. ${mx.toFixed(0)}%`, lw: close ? 220 : 130 }].filter(Boolean) });
@@ -668,7 +670,7 @@ async function loadKgt() {
 async function fetchDams() {
   if (DEMO) {
     const dd = ymd(new Date(Date.now() - (DEMO === "stale" ? 4 * 864e5 : 0)));
-    const bbp = DEMO === "red" ? 96.2 : DEMO === "yellow" ? 91.0 : 87.2, rel = DEMO === "red" ? 2.3 : DEMO === "yellow" ? 1.3 : 0.96;
+    const bbp = DEMO === "red" ? 96.2 : DEMO === "yellow" ? 91.0 : 87.2, rel = DEMO === "red" ? 5.2 : DEMO === "yellow" ? 1.6 : 0.96;
     return [{ dam: { id: DAM_BB, normal_storage: 12.4 }, dam_date: dd, dam_storage: (12.4 * bbp / 100).toFixed(2), dam_storage_percent: bbp, dam_inflow: 0.31, dam_released: 0.12 },
       { dam: { id: DAM_KL, normal_storage: 98 }, dam_date: dd, dam_storage: 130, dam_storage_percent: DEMO === "red" ? 141 : 132.7, dam_inflow: 1.4, dam_released: rel }];
   }
@@ -700,22 +702,26 @@ async function loadDams() {
       gap: p < 90 ? `อีก ${(90 - p).toFixed(1)}% ถึงเฝ้าระวัง` + (days != null ? ` · เต็มใน ~${Math.round(days)} วัน` : "") : p < 95 ? `อีก ${(95 - p).toFixed(1)}% ถึงอันตราย` : "เกินอันตราย" });
   } else { setCard("cBb", "x"); chip("bbChip", "x", "ไม่มีข้อมูล"); noData("bbViz", "bbSay", "ไม่มีข้อมูลอ่างบ้านบึง"); item("bb", { name: "อ่างบ้านบึง", short: "ไม่มีข้อมูล", s: "x", lv: null, card: "cBb" }); }
   if (kl) {
-    const p = +kl.dam_storage_percent, rel = kl.dam_released != null ? +kl.dam_released : null, lv = lvl(rel, null, 2.0), t = parseT(kl.dam_date + " 00:00");
+    // เกณฑ์ระบาย (ล้าน ลบ.ม./วัน): 🟡1.5 🟠2.0 🔴4.5 — ทดสอบย้อนหลังปี 56 (ก่อนมีอ่าง): น้ำลงมา ~5/วัน ท่วมรอบ 2 · 8–11/วัน ท่วมรอบ 1 (BACKTEST-2556.md)
+    const p = +kl.dam_storage_percent, rel = kl.dam_released != null ? +kl.dam_released : null, t = parseT(kl.dam_date + " 00:00");
+    const dl = rel == null ? 0 : rel >= KL_TH.r ? 3 : rel >= KL_TH.o ? 2 : rel >= KL_TH.y ? 1 : 0, lv = [0, 1, 1, 2][dl];
     const late = Date.now() - t > STALE.dam * 6e4 + 864e5;
     setWhen("klWhen", t, 1e9, true); if (late) { $("klWhen").textContent += " · ข้อมูลล่าช้า"; $("klWhen").classList.add("late"); }
     $("klRel").textContent = rel != null ? rel.toFixed(2) : "–";
-    $("klViz").innerHTML = rel == null ? "" : hbar({ min: 0, max: 3, fill: rel, fillC: lv ? "var(--red)" : "var(--water)", h: 90, ty: 32, th: 18, aria: `อ่างคลองหลวงระบาย ${rel} ล้าน ลบ.ม./วัน`,
-      ticks: [{ v: 2.0, c: "var(--red)", label: "อันตราย 2.0", anchor: "end", lw: 90 }],
-      refs: [{ v: 2.5, label: "ปี 56 อ่างแตก 2.5", anchor: "end", below: true }],
-      marks: [{ v: rel, label: `ระบาย ${rel.toFixed(2)}`, lw: 90 }] });
-    $("klSay").innerHTML = rel == null ? "" : (rel < 2 ? `ระบายต่ำกว่าเกณฑ์อันตรายอีก <b>${(2 - rel).toFixed(2)}</b> ล้าน ลบ.ม./วัน` : `ระบายเกินเกณฑ์อันตราย <b>${(rel - 2).toFixed(2)}</b> ล้าน ลบ.ม./วัน`)
+    const top = rel != null && rel > 5.5 ? 12 : 6;
+    $("klViz").innerHTML = rel == null ? "" : hbar({ min: 0, max: top, fill: Math.min(rel, top), fillC: ["var(--water)", "var(--yellow)", "var(--orange)", "var(--red)"][dl], h: 96, ty: 34, th: 18, aria: `อ่างคลองหลวงระบาย ${rel} ล้าน ลบ.ม./วัน`,
+      ticks: [{ v: KL_TH.y, c: "var(--yellow)", label: `${KL_TH.y}`, lw: 30 }, { v: KL_TH.o, c: "var(--orange)", label: `${KL_TH.o}`, lw: 30 }, { v: KL_TH.r, c: "var(--red)", label: `อันตราย ${KL_TH.r}`, anchor: "end", lw: 90 }],
+      refs: [{ v: 5, label: "ปี 56 รอบ 2 ~5", anchor: "start", below: true }, { v: 10, label: "ปี 56 รอบ 1 ~10", anchor: "end", below: true }].filter(r => r.v <= top),
+      marks: [{ v: Math.min(rel, top), label: `ระบาย ${rel.toFixed(2)}`, lw: 90 }] });
+    const nx = dl < 1 ? [KL_TH.y, "เฝ้าระวัง"] : dl < 2 ? [KL_TH.o, "ใกล้อันตราย"] : dl < 3 ? [KL_TH.r, "อันตราย"] : null;
+    $("klSay").innerHTML = rel == null ? "" : (nx ? `ระบาย ${rel.toFixed(2)} · อีก <b>${(nx[0] - rel).toFixed(2)}</b> ล้าน ลบ.ม./วัน ถึง${nx[1]}` : `ระบายเกินเกณฑ์อันตราย <b>${(rel - KL_TH.r).toFixed(2)}</b> ล้าน ลบ.ม./วัน`)
       + `<br><span class="soft" style="font-weight:400">ความจุตอนนี้ <span class="num">${p.toFixed(0)}%</span> (${kl.dam_storage} / 98 ล้าน ลบ.ม.)${p > 100 ? " — เกิน 100% ปกติของอ่างนี้ ไม่ได้แปลว่าอันตราย" : ""}</span>`
       + (late ? `<div class="late-box">ข้อมูลล่าช้า — กรมชลฯ ยังไม่อัปเดต ไม่นับในสถานะรวม</div>` : "");
     $("klInfo").innerHTML = `น้ำเข้า <span class="num">${kl.dam_inflow ?? "–"}</span> ล้าน ลบ.ม./วัน`;
-    const s = late ? "x" : ST_LV[lv];
-    setCard("cKl", s); chip("klChip", late ? "x" : lv, late ? "ข้อมูลล่าช้า" : ["ปลอดภัย", "เฝ้าระวัง", "อันตราย"][lv]);
-    item("kl", { name: "อ่างคลองหลวง", mini: rel != null ? rel.toFixed(2) : "–", short: rel != null ? `ระบาย ${rel.toFixed(2)}` : "–", s, lv: late ? null : lv, card: "cKl", g: rel != null ? { min: 0, max: 3, v: rel, r: 2.0 } : null, score: rel != null ? scoreOf(rel, 0, 2.0) : 0,
-      gap: rel == null ? "" : rel < 2 ? `ระบาย ${rel.toFixed(2)} · อีก ${(2 - rel).toFixed(2)} ล้าน ลบ.ม./วัน ถึงอันตราย` : "ระบายเกินอันตราย" });
+    const s = late ? "x" : ["0", "1", "15", "2"][dl];
+    setCard("cKl", s); chip("klChip", late ? "x" : [0, 1, 15, 2][dl], late ? "ข้อมูลล่าช้า" : ["ปลอดภัย", "เฝ้าระวัง", "ใกล้อันตราย", "อันตราย"][dl]);
+    item("kl", { name: "อ่างคลองหลวง", mini: rel != null ? rel.toFixed(2) : "–", short: rel != null ? `ระบาย ${rel.toFixed(2)}` : "–", s, lv: late ? null : lv, card: "cKl", g: rel != null ? { min: 0, max: 6, v: Math.min(rel, 6), y: KL_TH.y, r: KL_TH.r } : null, score: rel != null ? scoreOf(rel, 0, KL_TH.r) : 0,
+      gap: rel == null ? "" : nx ? `ระบาย ${rel.toFixed(2)} · อีก ${(nx[0] - rel).toFixed(2)} ล้าน ลบ.ม./วัน ถึง${nx[1]}` : "ระบายเกินอันตราย" });
   } else { setCard("cKl", "x"); chip("klChip", "x", "ไม่มีข้อมูล"); noData("klViz", "klSay", "ไม่มีข้อมูลอ่างคลองหลวง"); item("kl", { name: "อ่างคลองหลวง", short: "ไม่มีข้อมูล", s: "x", lv: null, card: "cKl" }); }
 }
 
@@ -780,6 +786,8 @@ async function loadFc() {
   const wd = ["อา", "จ", "อ", "พ", "พฤ", "ศ", "ส"];
   setWhen("fcWhen", Date.now(), 24 * 60); $("fcWhen").textContent = "ดึงล่าสุด " + clock(Date.now());
   $("fc").innerHTML = days.map((t, i) => { const dt = new Date(t + "T00:00"); return `<div><div class="b" style="height:${(mm[i] / mx * 70).toFixed(0)}px"></div><b>${mm[i].toFixed(0)}</b>${i ? wd[dt.getDay()] + " " + dt.getDate() : "วันนี้"}</div>`; }).join("");
+  const sum = mm.reduce((a, b) => a + b, 0);
+  $("fcSum").innerHTML = `รวม 5 วัน <b class="num">${sum.toFixed(0)}</b> มม. · เทียบฝน 5 วันก่อนท่วมปี 56: รอบ 1 ~105 มม. · รอบ 2 ~55 มม. (ก.ย. 69 ~230+ มม.)`;
 }
 
 /* ── เรดาร์ฝน RainViewer (ฟรี ไม่ต้อง key · CORS เปิด) — ตรรกะเดียวกับ flood_watch.py (radar/radar_level) ดู RADAR-NOTES.md ──
