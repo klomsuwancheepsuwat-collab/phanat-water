@@ -166,6 +166,7 @@ header{display:flex;justify-content:space-between;align-items:flex-end;gap:12px;
         <li><span class="sw" style="background:var(--r-town);height:6px"></span><span><b>คลองกลางเมืองพนัส</b> ไหลใต้→เหนือ ผ่านออฟฟิศ 140 ม. (OSM เรียกช่วงในเมืองว่า "คลองเมือง")</span></li>
         <li><span class="sw" style="background:var(--r-east)"></span><span><b>คลองหลวง / ลำน้ำสายใหญ่ตะวันออก</b> จากอ่างคลองหลวงและถนน 331 → จุดแยก → อ้อมเมือง → ลงบางปะกง</span></li>
         <li><span class="sw" style="background:var(--r-hk)"></span><span><b>ห้วยเกวียน</b> (ชื่อตามแผนที่) ผ่านด้านตะวันตก ห่างเมือง 1.5–2 กม.</span></li>
+        <li><span class="sw" style="background:repeating-linear-gradient(90deg,var(--r-hk) 0 6px,transparent 6px 11px)"></span><span><b>ต้นทางห้วยเกวียน</b> ร่องต่ำผ่านนา รับน้ำล้นจากคลองกลางเมืองตอนน้ำมาก (ประมาณจากความสูงพื้นดิน · ไม่เห็นคลองในภาพดาวเทียม)</span></li>
         <li><span class="sw d"></span><span>สายจากอ่างบ้านบึง (ประมาณจากความสูงพื้นดิน)</span></li>
         <li><span class="sw net"></span><span>ลำน้ำ/คลอง/ลำห้วยอื่นๆ (OpenStreetMap)</span></li>
         <li><span class="sw lake"></span><span>อ่างเก็บน้ำ บึง บ่อ</span></li>
@@ -426,7 +427,7 @@ async function loadAll() {
 /* ── ประกอบ ── */
 (async () => {
   drawStations();
-  const [D, Hy] = await Promise.all([j("map_data.json"), j("hydro.json?v=2")]);
+  const [D, Hy] = await Promise.all([j("map_data.json?v=2"), j("hydro.json?v=2")]);
   H = Hy; drawHydro();
   $("km2").textContent = D.basin_km2;
   const e = .00012;
@@ -435,6 +436,13 @@ async function loadAll() {
   const town = D.town.map(up);
   river([D.stem], css("--r-bb"), 2.5, "สายจากอ่างบ้านบึง (ประมาณ)", { dash: "6 6" });
   river(D.east, css("--r-east"), 4, "คลองหลวง / ลำน้ำสายใหญ่ตะวันออก", { every: 2200 });
+  if (D.hk_trib) river(D.hk_trib, css("--r-hk"), 2.5, "ลำห้วยสาขาฝั่งตะวันตก ไหลลงห้วยเกวียน (OSM)", { every: 1e9 });
+  if (D.hk_up) {   // ต้นทางห้วยเกวียน: ร่องต่ำจาก DEM ไม่เห็นคลองในภาพดาวเทียม → เส้นประ
+    river([D.hk_up], css("--r-hk"), 3, "ต้นทางห้วยเกวียน: ร่องต่ำผ่านนา รับน้ำล้นจากคลองกลางเมืองตอนน้ำมาก (ประมาณจากความสูงพื้นดิน)", { dash: "5 6", every: 600 });
+    const o = D.hk_up[0];
+    L.circleMarker(o, { pane: "lbl", radius: 5, color: css("--r-hk"), weight: 2, fillColor: css("--surface"), fillOpacity: 1 })
+      .bindPopup(`<b>จุดที่น้ำล้นจากคลองกลางเมืองเข้าห้วยเกวียนได้ (ประมาณ)</b><div class="small" style="margin-top:4px">ตรงนี้พื้นที่นาฝั่งตะวันตกต่ำกว่าคันคลองกลางเมือง ห่างคลอง ~80 ม. · ร่องต่ำไล่ผ่านนาขึ้นเหนือ ~1.8 กม. ไปหัวห้วยเกวียนข้างถนน 315 · ภาพดาวเทียมไม่เห็นร่องคลอง = ปกติไม่ไหล ไหลเฉพาะตอนน้ำล้นตลิ่ง · ยังต้องยืนยันหน้างาน</div>`, { maxWidth: 260 }).addTo(keyL);
+  }
   river(D.hk, css("--r-hk"), 4, "ห้วยเกวียน", { every: 1400 });
   river(town, css("--r-town"), 5.5, "คลองกลางเมืองพนัส → เข้ากลางเมือง", { every: 1300 });
   riverLabel(town[0], .2, "คลองกลางเมืองพนัส", css("--r-town"));
