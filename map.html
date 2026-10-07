@@ -87,6 +87,11 @@ header{display:flex;justify-content:space-between;align-items:flex-end;gap:12px;
 .z-far .st .id{font-size:10px}
 .z-far .st.l{border-width:0;padding:2px}
 .z-mid .st{gap:4px;padding:2px 6px 2px 4px;font-size:11px} .z-mid .st .v{font-size:11px}
+/* ป้ายชนกัน: ป้ายจุดวัดย่อเหลือรหัส (mini) · ป้ายรอง (ชื่อลำน้ำ/สถานที่/จุดเสนอ) ซ่อน (hid) */
+.st.mini .sn,.st.mini .v{display:none} .st.mini{padding:2px;gap:0;border-width:0;border-radius:6px}
+.hid{visibility:hidden}
+/* ย่อป้ายสวนกับการซูมทั้งหน้าของเบราว์เซอร์ (--lz = 1/ระดับซูม) ป้ายจะคงขนาดเดิมบนจอ */
+.st,.rlab,.plab,.prop,.arw,.dot{zoom:var(--lz,1)}
 .arw{width:14px;height:14px;transform-origin:50% 50%;pointer-events:none}
 
 /* ── หมุดจุดวัด ── */
@@ -204,7 +209,8 @@ const ST = [
 ST.forEach(s => { s.lv = "x"; s.val = "–"; s.detail = "กำลังดึงข้อมูล…"; });
 
 /* ── แผนที่ ── */
-const map = L.map("map", { zoomControl: false, scrollWheelZoom: false, zoomSnap: 0, attributionControl: true });
+const map = L.map("map", { zoomControl: false, scrollWheelZoom: false, zoomSnap: 0, attributionControl: true })
+  .fitBounds([[13.235, 101.105], [13.505, 101.37]], { padding: [10, 10] });   // ตั้งมุมมองก่อนใส่ชั้นแผนที่ (ไม่งั้นถอดชั้นป้ายตอนเริ่มแล้วพัง)
 L.control.zoom({ position: "topright" }).addTo(map);
 L.control.scale({ metric: true, imperial: false, position: "bottomleft" }).addTo(map);
 map.attributionControl.setPrefix(false);
@@ -222,7 +228,7 @@ const base = {
   sat: () => L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}", { maxZoom: 19, attribution: "Esri World Imagery" }),
 };
 const labelsLayer = () => L.tileLayer(esri(dark() ? "World_Dark_Gray_Reference" : "World_Light_Gray_Reference"), { maxZoom: 16, pane: "labels", opacity: .7 });
-let baseNow = "map", baseL = base.map().addTo(map), labL = labelsLayer().addTo(map);
+let baseNow = "map", baseL = base.map().addTo(map), labL = labelsLayer(); if (map.getZoom() <= 11) labL.addTo(map);
 const farCls = () => { const z = map.getZoom(), c = map.getContainer().classList;
   c.toggle("z-far", z <= 10); c.toggle("z-mid", z > 10 && z < 13); c.toggle("z-near", z >= 13); };
 map.on("zoomend", farCls);
@@ -238,7 +244,7 @@ let gz = null;
   if (t === "gesturestart") gz = map.getZoom();
   else if (t === "gesturechange" && gz != null) map.setZoom(gz + Math.log2(e.scale), { animate: false });
 }, { passive: false }));
-map.on("zoomend", () => { const on = map.getZoom() <= 12; if (on !== map.hasLayer(labL)) on ? labL.addTo(map) : map.removeLayer(labL); });   // ป้าย Esri ซูมใกล้แล้วเบลอ/ใหญ่เกิน
+map.on("zoomend", () => { const on = map.getZoom() <= 11; if (on !== map.hasLayer(labL)) on ? labL.addTo(map) : map.removeLayer(labL); });   // ป้าย Esri ซูมใกล้แล้วเบลอ/ใหญ่เกิน
 function setBase(k) {
   baseNow = k; map.removeLayer(baseL); baseL = base[k]().addTo(map); baseL.bringToBack();
   document.querySelectorAll("[data-base]").forEach(b => b.setAttribute("aria-pressed", b.dataset.base === k));
@@ -309,6 +315,37 @@ function placeLabel(lat, lon, text) {
 /* ── หมุดจุดวัด ── */
 const stL = L.layerGroup().addTo(map), mk = {};
 const popup = s => `<b>${s.name}</b><br><span class="soft small">${s.sub}</span><div style="margin:6px 0"><span class="chip ${LVC[s.lv]}">${LVT[s.lv]}</span> <span class="num">${s.val}</span></div><div class="small">${s.detail}</div><div class="small soft" style="margin-top:4px">${s.kind}</div><a class="small" href="https://www.google.com/maps?q=${s.lat},${s.lon}" target="_blank" rel="noopener">เปิด Google Maps</a>`;
+/* ── จัดป้ายไม่ให้ชน: จุดวัดสำคัญสุด → ชื่อลำน้ำ → สถานที่ → จุดเสนอ ── */
+function declutter() {
+  const box = document.getElementById("map").getBoundingClientRect(), kept = [];
+  const hit = r => kept.some(k => r.left < k.right + 2 && r.right > k.left - 2 && r.top < k.bottom + 2 && r.bottom > k.top - 2);
+  const inView = r => r.right > box.left && r.left < box.right && r.bottom > box.top && r.top < box.bottom;
+  document.querySelectorAll(".st").forEach(e => e.classList.remove("mini"));
+  document.querySelectorAll(".rlab,.plab,.prop").forEach(e => e.classList.remove("hid"));
+  const sts = [...document.querySelectorAll(".st")];
+  sts.forEach(e => { if (hit(e.getBoundingClientRect())) e.classList.add("mini"); kept.push(e.getBoundingClientRect()); });
+  // รอบ 2: ป้ายเต็มที่ชนกับป้ายย่อตัวอื่น → ย่อด้วย
+  sts.forEach((e, i) => { if (e.classList.contains("mini")) return; const r = e.getBoundingClientRect();
+    if (sts.some((o, j) => j !== i && (() => { const k = o.getBoundingClientRect(); return r.left < k.right && r.right > k.left && r.top < k.bottom && r.bottom > k.top; })())) e.classList.add("mini"); });
+  kept.length = 0; sts.forEach(e => kept.push(e.getBoundingClientRect()));
+  document.querySelectorAll(".dot").forEach(e => kept.push(e.getBoundingClientRect()));
+  [".rlab", ".plab", ".prop"].forEach(sel => document.querySelectorAll(sel).forEach(e => {
+    const r = e.getBoundingClientRect(); if (!r.width || !inView(r)) return;
+    if (hit(r)) e.classList.add("hid"); else kept.push(r);
+  }));
+}
+let dcT; const dcLater = () => { clearTimeout(dcT); dcT = setTimeout(declutter, 60); };
+map.on("zoomend moveend", dcLater);
+/* ซูมทั้งหน้า (cmd +/− หรือบีบนิ้ว) → ย่อป้ายสวน */
+function pageZoom() {
+  const q = +new URLSearchParams(location.search).get("lz");
+  let z = q ? 1 / q : (window.outerWidth && innerWidth ? outerWidth / innerWidth : 1) * (window.visualViewport ? visualViewport.scale : 1);
+  if (!(z > 0) || Math.abs(z - 1) < .12) z = 1;
+  document.getElementById("map").style.setProperty("--lz", (1 / Math.min(Math.max(z, 1), 4)).toFixed(3));
+  dcLater();
+}
+addEventListener("resize", pageZoom); if (window.visualViewport) visualViewport.addEventListener("resize", pageZoom);
+pageZoom();
 function drawStations() {
   stL.clearLayers();
   ST.forEach(s => {
@@ -318,6 +355,7 @@ function drawStations() {
       .bindPopup(popup(s), { offset: [0, -30], maxWidth: 260 }).addTo(stL);
   });
   $("list").innerHTML = ST.map(s => `<button class="it" data-id="${s.id}"><span class="badge ${LVC[s.lv]}">${s.id}</span><span><span class="nm">${s.name}</span><div class="small soft">${s.detail}</div></span><span class="val">${s.val}<div><span class="chip ${LVC[s.lv]}">${LVT[s.lv]}</span></div></span></button>`).join("");
+  dcLater();
   document.querySelectorAll(".it").forEach(b => b.onclick = () => {
     const s = ST.find(x => x.id === b.dataset.id);
     $("map").scrollIntoView({ behavior: "smooth", block: "center" });
@@ -407,6 +445,7 @@ async function loadAll() {
   D.sensors.filter(s => !["S1", "A"].includes(s.id)).forEach(s =>
     L.marker([s.lat, s.lon], { pane: "lbl", title: s.name, icon: L.divIcon({ className: "", iconSize: [0, 0], html: `<div class="prop">${s.id}</div>` }) })
       .bindPopup(`<b>${s.id} ${s.name}</b><br><span class="small soft">จุดเสนอติดเซนเซอร์ · ${s.pri}</span><div class="small" style="margin-top:4px">${s.why}</div><a class="small" href="${s.g}" target="_blank" rel="noopener">เปิด Google Maps</a>`, { maxWidth: 260 }).addTo(keyL));
+  dcLater();
   matchMedia("(prefers-color-scheme: dark)").addEventListener("change", () => location.reload());
 })();
 loadAll();
