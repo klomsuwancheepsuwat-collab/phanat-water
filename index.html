@@ -129,6 +129,7 @@ button:disabled{opacity:.6}
 .cards{display:flex;flex-direction:column;gap:14px}
 .card{background:var(--surface);border-radius:var(--radius);box-shadow:var(--shadow);padding:16px;min-width:0;border-left:6px solid var(--gray);scroll-margin-top:12px}
 .card[data-s="0"]{border-left-color:var(--green)} .card[data-s="1"]{border-left-color:var(--yellow)}
+.card[hidden]{display:none!important}
 .card[data-s="15"]{border-left-color:var(--orange)} .card[data-s="2"]{border-left-color:var(--red)}
 .card[data-s="x"]{border-left-color:var(--gray)}
 .card[data-s="2"]{box-shadow:0 0 0 2px var(--red-bg),var(--shadow)}
@@ -313,6 +314,18 @@ ul{margin:6px 0 0;padding-left:1.1rem}
       <div class="hl"><span class="big" id="rain1">–</span><span class="unit">มม./ชม.</span></div>
       <div id="rainViz"></div>
       <div class="note" id="rainInfo"></div>
+    </section>
+
+    <!-- 7b) ท่วมรอบสอง (โผล่เฉพาะ 15 วันหลังฝนหนัก) -->
+    <section class="card" id="cR5" data-s="x" data-o="6" hidden>
+      <div class="ch">
+        <div><h2>ท่วมรอบสอง<small>ปี 56 รอบ 2 ฝนแค่ ~55 มม. แต่ท่วมลึก เพราะดินอิ่ม/คลองยังสูงจากรอบแรก · เฝ้า 15 วันหลังฝน 5 วัน ≥101 มม.</small></h2>
+          <div class="meta"><span class="tag t-fc">แบบจำลองฝน</span><span class="when" id="r5When"></span></div></div>
+        <span class="chip cx" id="r5Chip">รอข้อมูล</span>
+      </div>
+      <div class="hl"><span class="unit">ฝน 5 วัน</span><span class="big" id="r5Big">–</span><span class="unit">/ <b class="num" style="color:var(--yellow)">45</b> มม.</span></div>
+      <div id="r5Viz"></div>
+      <div class="note" id="r5Info"></div>
     </section>
 
     <!-- 8) เรดาร์ (logic เดิมทั้งหมด) -->
@@ -780,6 +793,30 @@ async function loadBpk() {
     g: { min: -2, max: 2.2, v: e.value, y: BPK_Y, r: BPK_BANK } });
 }
 
+/* ── ท่วมรอบสอง — ตรรกะเดียวกับ flood_watch.py rain5() (ECMWF IFS ย้อน 20 วัน · ทดสอบ ERA5 37 ปี ~0.8 ครั้ง/ปี จับ 17 ต.ค. 56 ได้) ── */
+const R5 = { org: 101, y: 45, win: 15 };
+async function loadR5() {
+  const d = await j(`https://api.open-meteo.com/v1/forecast?latitude=${OFFICE[0]}&longitude=${OFFICE[1]}&daily=precipitation_sum&models=ecmwf_ifs025&timezone=Asia%2FBangkok&past_days=20&forecast_days=1`);
+  const t = d.daily.time, mm = d.daily.precipitation_sum.map(v => v || 0), n = mm.length - 1;
+  const s5 = mm.map((_, i) => i >= 4 ? mm.slice(i - 4, i + 1).reduce((a, b) => a + b, 0) : null);
+  let last = null; s5.forEach((v, i) => { if (v != null && v >= R5.org) last = i; });
+  const open = last != null && n - last <= R5.win, fresh = open && n - 4 > last, act = fresh && s5[n] >= R5.y;
+  $("cR5").hidden = !open;
+  if (!open) { delete ITEMS.r5; return; }
+  const dm = x => { const q = new Date(x + "T00:00"); return q.getDate() + "/" + (q.getMonth() + 1); };
+  const until = new Date(new Date(t[last] + "T00:00").getTime() + R5.win * 864e5), lv = act ? 1 : 0, s = ST_LV[lv];
+  $("r5Big").textContent = s5[n].toFixed(0);
+  $("r5When").textContent = "ฝนหนักล่าสุด " + Math.round(s5[last]) + " มม. ถึง " + dm(t[last]) + " · เฝ้าถึง " + until.getDate() + "/" + (until.getMonth() + 1);
+  $("r5Viz").innerHTML = hbar({ min: 0, max: 120, fill: Math.min(s5[n], 120), fillC: act ? "var(--yellow)" : "var(--water)", h: 90, ty: 32, th: 18, aria: `ฝน 5 วัน ${s5[n].toFixed(0)} มม.`,
+    ticks: [{ v: R5.y, c: "var(--yellow)", label: `เฝ้าระวัง ${R5.y}`, anchor: "end", lw: 90 }],
+    refs: [{ v: 55, label: "ปี 56 รอบ 2 ~55", anchor: "start", below: true }],
+    marks: [{ v: Math.min(s5[n], 120), label: `ตอนนี้ ${s5[n].toFixed(0)}`, lw: 90 }] });
+  $("r5Info").textContent = act ? "ฝนชุดใหม่ถึงเกณฑ์ ขณะดินยังอิ่มน้ำจากรอบก่อน — เฝ้าระวังน้ำท่วมซ้ำ" : !fresh ? "ยังนับรวมฝนชุดเดิม รอฝนชุดใหม่" : `อีก ${(R5.y - s5[n]).toFixed(0)} มม. ถึงเฝ้าระวัง · ฝนจากแบบจำลอง ECMWF ไม่ใช่สถานีวัด`;
+  setCard("cR5", s); chip("r5Chip", lv, act ? "เฝ้าระวัง" : "ปกติ");
+  item("r5", { name: "ท่วมรอบสอง", mini: s5[n].toFixed(0), short: `ฝน 5 วัน ${s5[n].toFixed(0)} มม.`, s, lv, card: "cR5", g: { min: 0, max: 120, v: Math.min(s5[n], 120), y: R5.y }, score: scoreOf(s5[n], 0, R5.y) * 0.6,
+    gap: act ? "ฝนชุดใหม่ถึงเกณฑ์ ช่วงดินยังอิ่ม" : `ฝน 5 วัน ${s5[n].toFixed(0)} · อีก ${Math.max(0, R5.y - s5[n]).toFixed(0)} มม. ถึงเฝ้าระวัง` });
+}
+
 async function loadFc() {
   const d = await j(`https://api.open-meteo.com/v1/forecast?latitude=${OFFICE[0]}&longitude=${OFFICE[1]}&daily=precipitation_sum&models=ecmwf_ifs025&timezone=Asia%2FBangkok&forecast_days=5`);
   const days = d.daily.time, mm = d.daily.precipitation_sum.map(v => v || 0), mx = Math.max(30, ...mm);
@@ -1042,6 +1079,7 @@ const TUBE = {
   bb: ["น้ำในอ่างบ้านบึง", "% ของความจุอ่าง", i => i.short + " ความจุ"],
   kl: ["น้ำที่อ่างคลองหลวงปล่อยออก", "ล้าน ลบ.ม./วัน · ไหลลงคลองหลวง", i => i.mini + " ล้าน ลบ.ม./วัน"],
   rain: ["ฝนตกใน 1 ชม.ล่าสุด", "สถานีวัดฝนรอบพนัสที่ตกหนักสุด", i => i.short],
+  r5: ["ฝน 5 วัน ช่วงเสี่ยงท่วมรอบสอง", "15 วันหลังฝนหนัก ดินยังอิ่ม · ปี 56 รอบ 2 ~55 มม.", i => i.mini + " มม."],
   radar: ["เรดาร์ฝนต้นน้ำ", "ฝนหนักในลุ่มน้ำที่ไหลเข้าพนัส · ล่วงหน้า 90 นาที", i => i.mini],
   bpk: ["ระดับน้ำแม่น้ำบางปะกง", "ปลายน้ำ · ขึ้นลงตามน้ำทะเล · ไม่นับสถานะรวม", i => i.mini + " ม.รทก."],
 };
@@ -1060,7 +1098,7 @@ function tube(i) {
     + `<span class="tls">${lab(g.y, "y")}${lab(g.r, "r")}</span></a>`;
 }
 function renderHero(fails) {
-  const list = ["A", "vg", "kgt", "bb", "kl", "rain", "radar", "bpk"].map(k => ITEMS[k]).filter(Boolean);
+  const list = ["A", "vg", "kgt", "bb", "kl", "rain", "r5", "radar", "bpk"].map(k => ITEMS[k]).filter(Boolean);
   const fresh = list.filter(i => !i.info && i.lv != null), late = list.filter(i => !i.info && i.lv == null);   // info = โชว์หลอดแต่ไม่นับสถานะรวม (บางปะกง)
   const core = ["kgt", "vg"].filter(k => !ITEMS[k] || ITEMS[k].lv == null);
   let lv = fresh.length ? Math.max(...fresh.map(i => i.lv)) : null;
@@ -1096,8 +1134,8 @@ let busy = false;
 async function load() {
   if (busy) return; busy = true;
   const btn = $("refresh"); btn.textContent = "กำลังดึง…"; btn.disabled = true;
-  const jobs = [loadStatus().then(st => { renderA(st); renderVg(st); }), loadKgt(), loadDams(), loadRain(), loadBpk(), loadFc(), loadRadar()];
-  const names = ["จุด A/คลองกลางเมืองพนัส", "คลองหลวง", "อ่าง", "ฝน", "บางปะกง", "ฝนพยากรณ์", "เรดาร์"];
+  const jobs = [loadStatus().then(st => { renderA(st); renderVg(st); }), loadKgt(), loadDams(), loadRain(), loadBpk(), loadFc(), loadRadar(), loadR5()];
+  const names = ["จุด A/คลองกลางเมืองพนัส", "คลองหลวง", "อ่าง", "ฝน", "บางปะกง", "ฝนพยากรณ์", "เรดาร์", "ท่วมรอบสอง"];
   const res = await Promise.allSettled(jobs), fails = [];
   res.forEach((r, i) => { if (r.status === "rejected") { fails.push(names[i]); console.error(names[i], r.reason); } });
   if (res[0].status === "rejected") { renderA(null); renderVg(null); }
