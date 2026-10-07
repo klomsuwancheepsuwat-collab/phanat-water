@@ -5,137 +5,392 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="referrer" content="no-referrer">
 <meta name="theme-color" content="#F0EEE6">
-<title>น้ำเข้าพนัส</title>
+<title>แผนที่น้ำพนัส</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+Thai:wght@500;600&family=Sarabun:wght@400;600&family=IBM+Plex+Mono:wght@500&display=swap">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
 <style>
-/* หน้าเดียวแนวตั้งสำหรับมือถือ: แถบสถานะรวม → การ์ดคลองหลวง (กราฟ) → การ์ดย่อย 2 คอลัมน์ → ฝนพยากรณ์ */
+/* แผนที่ทางน้ำ: ฐานแผนที่เรียบ + เครือข่ายลำน้ำ OSM ทั้งหมด (hydro.json) + สายที่ไหลเข้าเมืองเน้นสี/ลูกศรทิศน้ำ + จุดวัดค่าสด */
 :root{
   --bg:#F0EEE6; --surface:#FFFFFF; --surface-2:#FAF9F5;
   --ink:#1F1E1D; --ink-soft:#6B6A63; --border:#E6E2D6;
   --accent:#D97757; --accent-deep:#BD5D3A;
-  --red:#C44536; --yellow:#B08A12; --green:#5B7A5B; --gray:#9B998F;
+  --red:#C44536; --orange:#C9702A; --yellow:#B08A12; --green:#5B7A5B; --gray:#9B998F;
   --red-bg:#F6E1DD; --yellow-bg:#F4ECD2; --green-bg:#E3EBE2;
-  --water:#3E6E8E; --water-fill:rgba(62,110,142,.14);
+  --water:#3E6E8E;
+  --net:#4F86B3; --lake:#B9D3E6; --lake-line:#8DB4D3;
+  --r-town:#C2412D; --r-east:#1D5C8A; --r-hk:#C98A1B; --r-bb:#7A4FA0; --basin:#E39A4C;
+  --halo:#FFFFFF;
   --radius:12px; --shadow:0 1px 3px rgba(31,30,29,.06),0 10px 30px rgba(31,30,29,.05);
   --f-head:'Noto Serif Thai',Georgia,serif; --f-body:'Sarabun',-apple-system,sans-serif; --f-num:'IBM Plex Mono',ui-monospace,monospace;
 }
 @media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
   --bg:#1C1B19; --surface:#262522; --surface-2:#2D2B28; --ink:#EDEBE4; --ink-soft:#A8A59B; --border:#3A3833;
-  --accent:#E08A6B; --accent-deep:#E8A085; --red:#E46A5A; --yellow:#D9B648; --green:#8DB08D; --gray:#8A877E;
-  --red-bg:#3E2622; --yellow-bg:#3A321C; --green-bg:#243024; --water:#7FB0D0; --water-fill:rgba(127,176,208,.16);
+  --accent:#E08A6B; --accent-deep:#E8A085; --red:#E46A5A; --orange:#E39152; --yellow:#D9B648; --green:#8DB08D; --gray:#8A877E;
+  --red-bg:#3E2622; --yellow-bg:#3A321C; --green-bg:#243024; --water:#7FB0D0;
+  --net:#6FA3CC; --lake:#2B4458; --lake-line:#3F6582;
+  --r-town:#F0705A; --r-east:#5FA8E0; --r-hk:#E5B04A; --r-bb:#B48AD8; --basin:#E39A4C; --halo:#1C1B19;
   --shadow:0 1px 3px rgba(0,0,0,.3); color-scheme:dark}}
 :root[data-theme="dark"]{
   --bg:#1C1B19; --surface:#262522; --surface-2:#2D2B28; --ink:#EDEBE4; --ink-soft:#A8A59B; --border:#3A3833;
-  --accent:#E08A6B; --accent-deep:#E8A085; --red:#E46A5A; --yellow:#D9B648; --green:#8DB08D; --gray:#8A877E;
-  --red-bg:#3E2622; --yellow-bg:#3A321C; --green-bg:#243024; --water:#7FB0D0; --water-fill:rgba(127,176,208,.16);
+  --accent:#E08A6B; --accent-deep:#E8A085; --red:#E46A5A; --orange:#E39152; --yellow:#D9B648; --green:#8DB08D; --gray:#8A877E;
+  --red-bg:#3E2622; --yellow-bg:#3A321C; --green-bg:#243024; --water:#7FB0D0;
+  --net:#6FA3CC; --lake:#2B4458; --lake-line:#3F6582;
+  --r-town:#F0705A; --r-east:#5FA8E0; --r-hk:#E5B04A; --r-bb:#B48AD8; --basin:#E39A4C; --halo:#1C1B19;
   --shadow:0 1px 3px rgba(0,0,0,.3); color-scheme:dark}
 *{box-sizing:border-box}
 html,body{margin:0}
 body{background:var(--bg);color:var(--ink);font:16px/1.6 var(--f-body);padding:env(safe-area-inset-top,0px) 16px calc(24px + env(safe-area-inset-bottom,0px))}
-main{max-width:720px;margin:0 auto;display:grid;gap:14px;padding-block:14px}
+main{max-width:980px;margin:0 auto;display:grid;gap:14px;padding-block:14px}
 h1,h2{font-family:var(--f-head);font-weight:600;margin:0;text-wrap:balance}
 h1{font-size:1.45rem;line-height:1.3}
 h2{font-size:1.05rem}
+a{color:var(--accent-deep)}
 .num{font-family:var(--f-num);font-variant-numeric:tabular-nums}
 .soft{color:var(--ink-soft)}
 .small{font-size:.82rem}
 header{display:flex;justify-content:space-between;align-items:flex-end;gap:12px;flex-wrap:wrap}
-button{font:600 .9rem var(--f-body);color:var(--ink);background:var(--surface);border:1px solid var(--border);border-radius:999px;padding:8px 16px;cursor:pointer}
-button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .card{background:var(--surface);border-radius:var(--radius);box-shadow:var(--shadow);padding:16px;min-width:0}
-.banner{border-radius:var(--radius);padding:16px;display:grid;gap:4px}
-.banner .lv{font-family:var(--f-head);font-size:1.3rem;font-weight:600}
-.lv0{background:var(--green-bg)} .lv0 .lv{color:var(--green)}
-.lv1{background:var(--yellow-bg)} .lv1 .lv{color:var(--yellow)}
-.lv2{background:var(--red-bg)} .lv2 .lv{color:var(--red)}
-.lvx{background:var(--surface-2)}
-.chip{display:inline-flex;align-items:center;gap:6px;border-radius:999px;padding:2px 10px;font-size:.8rem;font-weight:600;white-space:nowrap}
-.chip::before{content:"";width:8px;height:8px;border-radius:50%;background:currentColor}
-.c0{color:var(--green);background:var(--green-bg)} .c1{color:var(--yellow);background:var(--yellow-bg)} .c2{color:var(--red);background:var(--red-bg)} .cx{color:var(--gray);background:var(--surface-2)}
-.row{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
-.big{font-family:var(--f-num);font-size:2rem;line-height:1.1;font-variant-numeric:tabular-nums}
-.big small{font-size:.9rem;color:var(--ink-soft);font-family:var(--f-body)}
-#map{height:62vh;min-height:360px;border-radius:var(--radius);box-shadow:var(--shadow)}
-.leg{display:grid;gap:6px;margin:0;padding:0;list-style:none}
-.leg li{display:flex;gap:10px;align-items:flex-start}
-.sw{flex:0 0 26px;height:6px;border-radius:3px;margin-top:10px}
-.sw.area{height:14px;margin-top:5px;opacity:.5}
-.pin{flex:0 0 26px;height:26px;border-radius:50%;display:grid;place-items:center;font:600 .78rem var(--f-num);color:#fff;background:var(--red)}
-.s{display:grid;grid-template-columns:30px 1fr;gap:10px;padding:12px 0;border-top:1px solid var(--border)}
-.s:first-of-type{border-top:0}
-.s a{color:var(--accent-deep);font-weight:600}
-.lbl{background:var(--surface);color:var(--ink);border:1px solid var(--border);border-radius:6px;padding:1px 6px;font:600 12px var(--f-body);box-shadow:var(--shadow);white-space:nowrap}
-.mk{width:28px;height:28px;border-radius:50%;background:var(--red);color:#fff;display:grid;place-items:center;font:600 12px var(--f-num);border:2px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,.4)}
-.mk.alt{background:var(--yellow)}
-.mk.eye{background:var(--water)}
-.leaflet-popup-content{font:14px/1.5 var(--f-body)}
+.two{display:grid;gap:14px;grid-template-columns:1fr}
+@media (min-width:860px){.two{grid-template-columns:1.15fr 1fr}}
+
+/* ── กรอบแผนที่ ── */
+.mapwrap{position:relative;border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow);background:var(--surface-2)}
+#map{height:72vh;min-height:420px;max-height:820px;background:var(--surface-2)}
+.tools{position:absolute;z-index:500;top:10px;left:10px;display:flex;gap:6px;flex-wrap:wrap;max-width:calc(100% - 70px)}
+.seg{display:inline-flex;background:var(--surface);border:1px solid var(--border);border-radius:999px;box-shadow:var(--shadow);padding:2px}
+.seg button{font:600 .8rem var(--f-body);color:var(--ink-soft);background:none;border:0;border-radius:999px;padding:5px 11px;cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--ink);color:var(--surface)}
+.seg button:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+.leaflet-container{font:13px var(--f-body)}
+.leaflet-control-attribution{font-size:10px}
+.leaflet-bar a{background:var(--surface);color:var(--ink);border-color:var(--border)}
+.leaflet-control-scale-line{background:color-mix(in srgb,var(--surface) 85%,transparent);border-color:var(--ink-soft);color:var(--ink)}
+.leaflet-popup-content-wrapper,.leaflet-popup-tip{background:var(--surface);color:var(--ink)}
+.leaflet-popup-content{font:14px/1.55 var(--f-body);margin:12px 14px}
+.leaflet-tooltip.tip{background:var(--surface);color:var(--ink);border:1px solid var(--border);box-shadow:var(--shadow);font:600 12px var(--f-body);padding:2px 8px}
+
+/* ── น้ำไหล: เส้นประเลื่อนตามทิศ ── */
+.flow{stroke-dasharray:2 14;stroke-linecap:round;animation:flow 1.6s linear infinite}
+@keyframes flow{to{stroke-dashoffset:-16}}
+@media (prefers-reduced-motion:reduce){.flow{animation:none}}
+
+/* ── ป้ายชื่อลำน้ำบนแผนที่ ── */
+.rlab{font:600 12.5px var(--f-body);white-space:nowrap;color:var(--c);text-shadow:0 0 3px var(--halo),0 0 3px var(--halo),0 0 6px var(--halo);pointer-events:none;transform:translate(-50%,-50%)}
+.plab{font:600 11.5px var(--f-body);white-space:nowrap;color:var(--ink);text-shadow:0 0 3px var(--halo),0 0 3px var(--halo);pointer-events:none;transform:translate(10px,-50%)}
+.town{font:600 15px var(--f-head);letter-spacing:.02em;color:var(--ink);text-shadow:0 0 4px var(--halo),0 0 4px var(--halo),0 0 8px var(--halo);pointer-events:none;transform:translate(-50%,-50%);white-space:nowrap}
+.far .arw,.far .rlab{display:none}
+.arw{width:14px;height:14px;transform-origin:50% 50%;pointer-events:none}
+
+/* ── หมุดจุดวัด ── */
+.st{position:absolute;left:0;top:0;transform:translate(12px,-50%);display:flex;align-items:center;gap:6px;background:var(--surface);color:var(--ink);border:1px solid var(--border);border-left:4px solid var(--lc);border-radius:8px;padding:3px 8px 3px 6px;box-shadow:0 2px 8px rgba(0,0,0,.18);white-space:nowrap;cursor:pointer;font:600 12px/1.25 var(--f-body)}
+.st.l{transform:translate(calc(-100% - 12px),-50%);border-left:1px solid var(--border);border-right:4px solid var(--lc);flex-direction:row-reverse;padding:3px 6px 3px 8px}
+.st.t{transform:translate(-50%,calc(-100% - 10px))}
+.st.b{transform:translate(-50%,10px)}
+.st .v{font:500 12px var(--f-num);color:var(--ink-soft)}
+@media (max-width:560px){.st .sn{display:none}.st{gap:4px;padding:2px 6px 2px 4px}.st.l{padding:2px 4px 2px 6px}.rlab{font-size:11px}.plab{display:none}}
+.st .id{font:600 11px var(--f-num);background:var(--lc);color:#fff;border-radius:4px;padding:0 4px}
+.dot{position:absolute;left:0;top:0;width:12px;height:12px;transform:translate(-50%,-50%);border-radius:50%;background:var(--lc);border:2px solid var(--surface);box-shadow:0 0 0 1px var(--lc)}
+.pulse{animation:pulse 1.8s ease-out infinite}
+@keyframes pulse{0%{box-shadow:0 0 0 0 color-mix(in srgb,var(--lc) 60%,transparent)}100%{box-shadow:0 0 0 14px transparent}}
+@media (prefers-reduced-motion:reduce){.pulse{animation:none}}
+.prop{position:absolute;left:0;top:0;transform:translate(-50%,-50%);width:24px;height:24px;border-radius:50%;border:2px dashed var(--ink-soft);background:color-mix(in srgb,var(--surface) 80%,transparent);display:grid;place-items:center;font:600 10px var(--f-num);color:var(--ink-soft)}
+.lv0{--lc:var(--green)} .lv1{--lc:var(--yellow)} .lv15{--lc:var(--orange)} .lv2{--lc:var(--red)} .lvx{--lc:var(--gray)} .lvi{--lc:var(--water)}
+
+/* ── รายการ/สัญลักษณ์ ── */
+.chip{display:inline-flex;align-items:center;gap:6px;border-radius:999px;padding:1px 9px;font-size:.78rem;font-weight:600;white-space:nowrap;color:var(--lc);background:color-mix(in srgb,var(--lc) 14%,transparent)}
+.chip::before{content:"";width:7px;height:7px;border-radius:50%;background:currentColor}
+.list{display:grid}
+.it{display:grid;grid-template-columns:34px 1fr auto;gap:10px;align-items:center;padding:10px 0;border-top:1px solid var(--border);cursor:pointer;background:none;border-left:0;border-right:0;border-bottom:0;text-align:left;color:inherit;font:inherit;width:100%}
+.it:first-child{border-top:0}
+.it:hover .nm{color:var(--accent-deep)}
+.it:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:6px}
+.badge{width:34px;height:34px;border-radius:8px;display:grid;place-items:center;font:600 11px var(--f-num);color:#fff;background:var(--lc)}
+.nm{font-weight:600;line-height:1.3}
+.val{font:500 .95rem var(--f-num);text-align:right;white-space:nowrap}
+.leg{display:grid;gap:9px;margin:0;padding:0;list-style:none}
+.leg li{display:grid;grid-template-columns:34px 1fr;gap:10px;align-items:center}
+.sw{height:5px;border-radius:3px}
+.sw.d{background:repeating-linear-gradient(90deg,var(--r-bb) 0 7px,transparent 7px 11px)!important}
+.sw.net{height:2px;background:var(--net);opacity:.7}
+.sw.area{height:14px;border-radius:3px;opacity:.45}
+.sw.lake{height:14px;border-radius:3px;background:var(--lake);border:1px solid var(--lake-line)}
+.summary{border-left:4px solid var(--r-town)}
+.summary p{margin:0}
+.upd{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
 </style>
 </head>
 <body>
 <main>
   <header>
-    <div><div class="small soft">ออฟฟิศ สุวรรณหงษ์ · พนัสนิคม</div><h1>น้ำเข้าเมืองพนัสมาจากไหน</h1></div>
+    <div><div class="small soft">ออฟฟิศ สุวรรณหงษ์ · พนัสนิคม · ชลบุรี</div><h1>แผนที่ลำน้ำที่ไหลเข้าเมืองพนัส</h1></div>
     <a href="./" class="small">← กลับหน้าน้ำสด</a>
   </header>
 
-  <section class="card">
-    <p style="margin:0"><b>สรุป:</b> น้ำที่ท่วม<b>กลางเมือง</b> (ออฟฟิศ · ตลาด · บ้านเช่า 44) มากับ<b>คลองกลางเมือง</b> (เส้นแดง) ซึ่งแยกมาจากลำน้ำสายใหญ่ทางตะวันออกเฉียงใต้ ที่จุดแยกห่างเมือง ~8 กม. ต้นน้ำของสายนี้คือพื้นที่สีส้ม (รวมบ่อหนองเสม็ด/อาหารสยามริมถนน 331) ส่วน<b>ห้วยเกวียนตามชื่อในแผนที่</b> (เส้นส้ม) ไหลผ่านด้านตะวันตกของเมือง ห่าง ~1.5–2 กม.</p>
+  <section class="card summary">
+    <p><b>น้ำที่ท่วมกลางเมือง</b> (ออฟฟิศ · ตลาด · บ้านเช่า 44) มากับ<b style="color:var(--r-town)">คลองกลางเมืองพนัส</b> ซึ่งแยกจากลำน้ำสายใหญ่ทางตะวันออกเฉียงใต้ ห่างเมือง ~8 กม. แล้วไหลจากใต้ขึ้นเหนือผ่านกลางเมือง · <b style="color:var(--r-east)">คลองหลวง</b> อ้อมเมืองด้านตะวันออก/เหนือ · <b style="color:var(--r-hk)">ห้วยเกวียน</b> ผ่านด้านตะวันตก</p>
+    <div class="upd small soft" style="margin-top:8px"><span id="overall"></span><span id="upd">กำลังดึงค่าสด…</span></div>
   </section>
 
-  <div id="map" role="img" aria-label="แผนที่ลำน้ำและจุดติดเซนเซอร์"></div>
-  <div class="small soft" style="margin-top:-6px">แตะหมุดเพื่อดูรายละเอียด · ปุ่มมุมขวาบนสลับภาพดาวเทียม/แผนที่</div>
+  <div class="mapwrap">
+    <div id="map" role="img" aria-label="แผนที่ลำน้ำรอบเมืองพนัสนิคม พร้อมจุดวัดระดับน้ำ"></div>
+    <div class="tools">
+      <div class="seg" role="group" aria-label="ฐานแผนที่"><button data-base="map" aria-pressed="true">แผนที่น้ำ</button><button data-base="sat" aria-pressed="false">ดาวเทียม</button></div>
+      <div class="seg" role="group" aria-label="มุมมอง"><button data-view="town" aria-pressed="false">ตัวเมือง</button><button data-view="basin" aria-pressed="true">ทั้งลุ่ม</button><button data-view="all" aria-pressed="false">ถึงบางปะกง</button></div>
+    </div>
+  </div>
+  <div class="small soft" style="margin-top:-6px">ลูกศร/เส้นประวิ่ง = ทิศน้ำไหล · แตะหมุดหรือรายการด้านล่างเพื่อดูค่าและพาไปจุดนั้น</div>
 
-  <section class="card">
-    <h2 style="margin-bottom:10px">สัญลักษณ์</h2>
-    <ul class="leg small">
-      <li><span class="sw" style="background:#E53935"></span><span><b>คลองกลางเมือง</b> ไหลจากใต้ขึ้นเหนือ ผ่านออฟฟิศ 140 ม. (ในแผนที่ชื่อ "คลองเมือง" ช่วงเหนือออฟฟิศ)</span></li>
-      <li><span class="sw" style="background:#1E88E5"></span><span><b>ลำน้ำสายใหญ่ตะวันออก</b> จากถนน 331 → จุดแยก → อ้อมเมืองด้านตะวันออก</span></li>
-      <li><span class="sw" style="background:#FB8C00"></span><span><b>ห้วยเกวียน</b> (ชื่อตามแผนที่) ด้านตะวันตกของเมือง</span></li>
-      <li><span class="sw" style="background:#8E24AA"></span><span>สายจากอ่างบ้านบึง (ประมาณจากความสูงพื้นดิน ไหลผ่านตะวันตก ไกลกว่าห้วยเกวียน)</span></li>
-      <li><span class="sw area" style="background:#FF9800"></span><span>พื้นที่ต้นน้ำที่ไหลมาถึงจุดแยก ≈ <span id="km2"></span> ตร.กม. (ประมาณจาก DEM)</span></li>
-    </ul>
-  </section>
+  <div class="two">
+    <section class="card">
+      <h2>จุดวัดระดับน้ำ <span class="small soft" style="font-weight:400;font-family:var(--f-body)">· ค่าสด</span></h2>
+      <div class="list" id="list" style="margin-top:6px"></div>
+      <p class="small soft" style="margin:8px 0 0">สีตามเกณฑ์เดียวกับหน้าน้ำสด: <span class="chip lv0">ปกติ</span> <span class="chip lv1">เฝ้าระวัง</span> <span class="chip lv2">อันตราย</span> <span class="chip lvx">ไม่มีข้อมูล/ล่าช้า</span></p>
+    </section>
 
-  <section class="card">
-    <h2>จุดวัดระดับน้ำ</h2>
-    <div class="small soft">S1–S4 = จุดเสนอติดเซนเซอร์ · A = จุดที่เสี่ยดูด้วยตา</div>
-    <div id="sensors"></div>
-    <p class="small soft" style="margin:8px 0 0">เลือกจากสะพานที่ถนนข้ามลำน้ำ (ติดตั้งใต้สะพาน ส่งข้อมูลผ่าน 4G) · ต้องให้คนไปดูหน้างานก่อนว่าสะพานติดได้จริง และอาจต้องขออนุญาตเทศบาล/อบต. · <a href="phanat-sensors.kml" download>โหลดไฟล์ KML</a> เข้า Google My Maps ได้</p>
-  </section>
+    <section class="card">
+      <h2 style="margin-bottom:12px">สัญลักษณ์</h2>
+      <ul class="leg small">
+        <li><span class="sw" style="background:var(--r-town);height:6px"></span><span><b>คลองกลางเมืองพนัส</b> ไหลใต้→เหนือ ผ่านออฟฟิศ 140 ม. (OSM เรียกช่วงในเมืองว่า "คลองเมือง")</span></li>
+        <li><span class="sw" style="background:var(--r-east)"></span><span><b>คลองหลวง / ลำน้ำสายใหญ่ตะวันออก</b> จากอ่างคลองหลวงและถนน 331 → จุดแยก → อ้อมเมือง → ลงบางปะกง</span></li>
+        <li><span class="sw" style="background:var(--r-hk)"></span><span><b>ห้วยเกวียน</b> (ชื่อตามแผนที่) ผ่านด้านตะวันตก ห่างเมือง 1.5–2 กม.</span></li>
+        <li><span class="sw d"></span><span>สายจากอ่างบ้านบึง (ประมาณจากความสูงพื้นดิน)</span></li>
+        <li><span class="sw net"></span><span>ลำน้ำ/คลอง/ลำห้วยอื่นๆ (OpenStreetMap)</span></li>
+        <li><span class="sw lake"></span><span>อ่างเก็บน้ำ บึง บ่อ</span></li>
+        <li><span class="sw area" style="background:var(--basin)"></span><span>พื้นที่ต้นน้ำที่ไหลมาถึงจุดแยก ≈ <span id="km2" class="num"></span> ตร.กม.</span></li>
+        <li><span class="prop" style="position:static;transform:none;margin:auto">S2</span><span>จุดเสนอติดเซนเซอร์ (ยังไม่มีเครื่องวัด)</span></li>
+      </ul>
+    </section>
+  </div>
 
   <section class="card small soft">
-    ที่มา: ลำน้ำ/ถนน OpenStreetMap · ทิศน้ำไหลตรวจกับความสูงพื้นดิน FABDEM (OSM วาดทิศคลองกลางเมืองกลับด้าน) · จุดแยกตรวจด้วยภาพดาวเทียมแล้ว · 5 ต.ค. 69 ·
-    ยังต้องยืนยันหน้างาน: ชื่อคลองที่คนในพื้นที่เรียก และน้ำแยกเข้าคลองกลางเมืองที่จุดแยกได้แค่ไหนตอนน้ำมาก
+    ที่มา: ลำน้ำ/แหล่งน้ำ © OpenStreetMap (ODbL) · ฐานแผนที่ Esri Light/Dark Gray Canvas · ดาวเทียม Esri World Imagery · ค่าสด: สสน./กรมชลประทาน ผ่าน thaiwater · คลองกลางเมืองพนัส (แบบจำลอง) + จุด A ส่งจากเครื่องออฟฟิศ ·
+    ทิศน้ำไหลตรวจกับความสูงพื้นดิน FABDEM (OSM วาดทิศคลองกลางเมืองกลับด้าน) · ยังต้องยืนยันหน้างาน: ชื่อที่คนในพื้นที่เรียก และน้ำแยกเข้าคลองกลางเมืองที่จุดแยกได้แค่ไหนตอนน้ำมาก ·
+    <a href="phanat-sensors.kml" download>โหลด KML</a> เข้า Google My Maps ได้
   </section>
 </main>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 <script>
-(async () => {
-  const D = await (await fetch("map_data.json")).json();
-  document.getElementById("km2").textContent = D.basin_km2;
-  const map = L.map("map", { scrollWheelZoom: false }).fitBounds([[13.25, 101.12], [13.47, 101.29]]);
-  const sat = L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}", { maxZoom: 19, attribution: "Esri World Imagery" });
-  const osm = L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", { maxZoom: 19, attribution: "© OpenStreetMap" });
-  sat.addTo(map);
-  L.control.layers({ "ดาวเทียม": sat, "แผนที่": osm }).addTo(map);
-  const e = .00012; D.basin.forEach(r => L.rectangle([[r[0] - e, r[1] - e], [r[2] + e, r[3] + e]], { stroke: false, fillColor: "#FF9800", fillOpacity: .3, interactive: false }).addTo(map));
-  const line = (cs, color, w, tip) => cs.forEach(c => L.polyline(c, { color, weight: w, opacity: .95 }).bindTooltip(tip, { sticky: true }).addTo(map));
-  line([D.stem], "#8E24AA", 3, "สายจากอ่างบ้านบึง (ประมาณ)");
-  line(D.east, "#1E88E5", 4, "ลำน้ำสายใหญ่ตะวันออก");
-  line(D.hk, "#FB8C00", 5, "ห้วยเกวียน");
-  line(D.town, "#E53935", 6, "คลองกลางเมือง → เข้ากลางเมือง");
-  D.poi.forEach(p => L.circleMarker([p.lat, p.lon], { radius: 5, color: "#fff", weight: 2, fillColor: "#1F1E1D", fillOpacity: 1 })
-    .bindTooltip(p.name, { permanent: true, direction: "right", className: "lbl", offset: [6, 0] }).addTo(map));
-  const box = document.getElementById("sensors");
-  D.sensors.forEach(s => {
-    const alt = s.id === "S4" || s.id === "S3", eye = s.id === "A";
-    L.marker([s.lat, s.lon], { icon: L.divIcon({ className: "", html: `<div class="mk${alt ? " alt" : ""}${eye ? " eye" : ""}">${s.id}</div>`, iconSize: [28, 28], iconAnchor: [14, 14] }) })
-      .bindPopup(`<b>${s.id} ${s.name}</b><br>${s.pri}<br>${s.why}<br><a href="${s.g}" target="_blank" rel="noopener">เปิด Google Maps</a>`).addTo(map);
-    box.insertAdjacentHTML("beforeend", `<div class="s"><span class="pin" style="${eye ? "background:var(--water)" : alt ? "background:var(--yellow)" : ""}">${s.id}</span><div><b>${s.name}</b> <span class="small soft">· ${s.pri}</span><div class="small">${s.why}</div><div class="small"><a href="${s.g}" target="_blank" rel="noopener">${s.lat}, ${s.lon} · เปิด Google Maps</a></div></div></div>`);
+const API = "https://api-v3.thaiwater.net/api/v1/thaiwater30";
+const KGT = 504997, BPK = 154, DAM_KL = 58864, DAM_BB = 622;
+const $ = id => document.getElementById(id);
+const css = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+const dark = () => matchMedia("(prefers-color-scheme: dark)").matches;
+const pad = n => String(n).padStart(2, "0");
+const ymd = d => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+const lvl = (v, y, r) => v == null ? 0 : (r != null && v >= r ? 2 : (y != null && v >= y ? 1 : 0));
+const LVC = { 0: "lv0", 1: "lv1", 1.5: "lv15", 2: "lv2", x: "lvx", i: "lvi" };
+const LVT = { 0: "ปกติ", 1: "เฝ้าระวัง", 1.5: "เฝ้าระวังสูง", 2: "อันตราย", x: "ไม่มีข้อมูล", i: "ข้อมูลประกอบ" };
+const parseT = s => new Date(String(s).slice(0, 16).replace(" ", "T")).getTime();
+const when = ms => { const d = new Date(ms); return `${d.getDate()}/${d.getMonth() + 1} ${pad(d.getHours())}:${pad(d.getMinutes())} น.`; };
+async function j(url) { const r = await fetch(url); if (!r.ok) throw new Error(r.status); return r.json(); }
+
+/* ── จุดวัด: ตำแหน่ง + ค่าเริ่ม (ค่าสดเติมทีหลัง) ── */
+const ST = [
+  { id: "S1", key: "vg", name: "คลองกลางเมืองพนัส", sub: "เครื่องวัดเสมือน · ก่อนเข้าเมือง ~2 กม.", lat: 13.42861, lon: 101.18704, side: "b", kind: "แบบจำลอง (ฝน→ลำน้ำ) อัปเดตจากเครื่องออฟฟิศ" },
+  { id: "A", key: "A", name: "จุด A สะพานห้วยเกวียน", sub: "บ้านเกาะสะเดา · เสี่ยอ่านด้วยตา", lat: 13.431541, lon: 101.174763, side: "l", kind: "วัดด้วยตา (ต่ำกว่าตลิ่ง)" },
+  { id: "K", key: "kgt", name: "คลองหลวง บ้านท่าบุญมี", sub: "Kgt.19A · ท้ายอ่างคลองหลวง ~8 กม. ก่อนถึงพนัส", lat: 13.40472, lon: 101.281776, side: "r", kind: "โทรมาตรกรมชลฯ รายชั่วโมง" },
+  { id: "KL", key: "kl", name: "อ่างคลองหลวง รัชชโลทร", sub: "ปริมาณระบายลงคลองหลวง", lat: 13.392335, lon: 101.357059, side: "b", kind: "กรมชลฯ รายวัน" },
+  { id: "BB", key: "bb", name: "อ่างบ้านบึง", sub: "ต้นน้ำฝั่งตะวันตกเฉียงใต้", lat: 13.247851, lon: 101.129034, side: "l", kind: "กรมชลฯ รายวัน" },
+  { id: "BP", key: "bpk", name: "แม่น้ำบางปะกง", sub: "ปลายทางที่คลองหลวงไหลลง (น้ำทะเลหนุน)", lat: 13.54901, lon: 101.00111, side: "r", kind: "โทรมาตร สสน. · ข้อมูลประกอบ" },
+];
+ST.forEach(s => { s.lv = "x"; s.val = "–"; s.detail = "กำลังดึงข้อมูล…"; });
+
+/* ── แผนที่ ── */
+const map = L.map("map", { zoomControl: false, scrollWheelZoom: false, attributionControl: true });
+L.control.zoom({ position: "topright" }).addTo(map);
+L.control.scale({ metric: true, imperial: false, position: "bottomleft" }).addTo(map);
+map.attributionControl.setPrefix(false);
+map.createPane("basin").style.zIndex = 300;
+map.createPane("hydro").style.zIndex = 350;
+map.createPane("key").style.zIndex = 420;
+map.createPane("lbl").style.zIndex = 450;
+map.createPane("labels").style.zIndex = 460; map.getPane("labels").style.pointerEvents = "none";
+map.createPane("st").style.zIndex = 650;
+
+const esri = s => `https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/${s}/MapServer/tile/{z}/{y}/{x}`;
+const ATT_E = 'Esri, HERE, Garmin, © <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>';
+const base = {
+  map: () => L.tileLayer(esri(dark() ? "World_Dark_Gray_Base" : "World_Light_Gray_Base"), { maxZoom: 16, attribution: ATT_E }),
+  sat: () => L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}", { maxZoom: 19, attribution: "Esri World Imagery" }),
+};
+const labelsLayer = () => L.tileLayer(esri(dark() ? "World_Dark_Gray_Reference" : "World_Light_Gray_Reference"), { maxZoom: 16, pane: "labels", opacity: .7 });
+let baseNow = "map", baseL = base.map().addTo(map), labL = labelsLayer().addTo(map);
+const farCls = () => map.getContainer().classList.toggle("far", map.getZoom() < 11);
+map.on("zoomend", farCls);
+map.on("zoomend", () => { const on = map.getZoom() <= 12; if (on !== map.hasLayer(labL)) on ? labL.addTo(map) : map.removeLayer(labL); });   // ป้าย Esri ซูมใกล้แล้วเบลอ/ใหญ่เกิน
+function setBase(k) {
+  baseNow = k; map.removeLayer(baseL); baseL = base[k]().addTo(map); baseL.bringToBack();
+  document.querySelectorAll("[data-base]").forEach(b => b.setAttribute("aria-pressed", b.dataset.base === k));
+  drawHydro();
+}
+document.querySelectorAll("[data-base]").forEach(b => b.onclick = () => setBase(b.dataset.base));
+
+const VIEWS = { town: [[13.405, 101.135], [13.485, 101.225]], basin: [[13.235, 101.105], [13.505, 101.37]], all: [[13.235, 100.99], [13.565, 101.37]] };
+function setView(k) { map.flyToBounds(VIEWS[k], { duration: .6, padding: [10, 10] }); document.querySelectorAll("[data-view]").forEach(b => b.setAttribute("aria-pressed", b.dataset.view === k)); }
+document.querySelectorAll("[data-view]").forEach(b => b.onclick = () => setView(b.dataset.view));
+map.fitBounds(VIEWS.basin, { padding: [10, 10] }); farCls();
+
+/* ── เครือข่ายลำน้ำ OSM (canvas = ลื่นบนมือถือ) ── */
+const cv = L.canvas({ pane: "hydro", padding: .3 });
+let hydroL = L.layerGroup().addTo(map), H = null;
+const W = { river: 1.9, canal: 1.5, stream: 1.0, drain: .8 };
+function drawHydro() {
+  if (!H) return;
+  hydroL.clearLayers();
+  const sat = baseNow === "sat", net = sat ? "#7CC4FF" : css("--net");
+  H.water.forEach(w => L.polygon(w.c, { renderer: cv, color: sat ? "#7CC4FF" : css("--lake-line"), weight: .8, fillColor: sat ? "#7CC4FF" : css("--lake"), fillOpacity: sat ? .25 : .9, interactive: !!w.n })
+    .bindTooltip(w.n || "", { className: "tip", sticky: true }).addTo(hydroL));
+  H.ways.forEach(w => {
+    const l = L.polyline(w.c, { renderer: cv, color: net, weight: W[w.k] + (sat ? .4 : 0), opacity: sat ? .75 : .62, lineCap: "round", interactive: !!w.n });
+    if (w.n) l.bindTooltip(w.n, { className: "tip", sticky: true });
+    l.addTo(hydroL);
   });
+}
+
+/* ── สายหลัก: ขอบ + เส้นสี + น้ำวิ่ง + ลูกศร ── */
+const keyL = L.layerGroup().addTo(map);
+const toRad = d => d * Math.PI / 180;
+function meters(a, b) { const dx = (b[1] - a[1]) * 111320 * Math.cos(toRad(a[0])), dy = (b[0] - a[0]) * 110574; return Math.hypot(dx, dy); }
+function bearing(a, b) { const dx = (b[1] - a[1]) * Math.cos(toRad(a[0])), dy = b[0] - a[0]; return Math.atan2(dx, dy) * 180 / Math.PI; }
+function along(c, every, first) {   // จุด+มุม ทุก ๆ every เมตร ตามทิศเส้น
+  const out = []; let need = first, acc = 0;
+  for (let i = 1; i < c.length; i++) {
+    const d = meters(c[i - 1], c[i]);
+    while (d > 0 && acc + d >= need) {
+      const t = (need - acc) / d, p = [c[i - 1][0] + (c[i][0] - c[i - 1][0]) * t, c[i - 1][1] + (c[i][1] - c[i - 1][1]) * t];
+      out.push({ p, a: bearing(c[i - 1], c[i]) }); need += every;
+    }
+    acc += d;
+  }
+  return out;
+}
+function lenOf(c) { let s = 0; for (let i = 1; i < c.length; i++) s += meters(c[i - 1], c[i]); return s; }
+function river(lines, color, w, name, o = {}) {
+  const every = o.every || 1800;
+  lines.forEach(c => {
+    L.polyline(c, { pane: "key", color: css("--halo"), weight: w + 4, opacity: .85, interactive: false, lineCap: "round", lineJoin: "round" }).addTo(keyL);
+    L.polyline(c, { pane: "key", color, weight: w, opacity: 1, dashArray: o.dash, lineCap: "round", lineJoin: "round" }).bindTooltip(name, { className: "tip", sticky: true }).addTo(keyL);
+    if (!o.dash) L.polyline(c, { pane: "key", color: "#fff", weight: Math.max(1.5, w - 2.5), opacity: .75, className: "flow", interactive: false }).addTo(keyL);
+    along(c, every, every / 2).forEach(({ p, a }) =>
+      L.marker(p, { pane: "lbl", interactive: false, keyboard: false, icon: L.divIcon({ className: "", iconSize: [14, 14], iconAnchor: [7, 7],
+        html: `<svg class="arw" viewBox="0 0 14 14" style="transform:rotate(${a}deg)"><path d="M7 1 L12.5 12 L7 9.3 L1.5 12 Z" fill="${color}" stroke="${css("--halo")}" stroke-width="1.3" stroke-linejoin="round"/></svg>` }) }).addTo(keyL));
+  });
+}
+function riverLabel(c, frac, text, color) {
+  const pt = along(c, 1e9, lenOf(c) * frac)[0]; if (!pt) return;
+  L.marker(pt.p, { pane: "lbl", interactive: false, keyboard: false, icon: L.divIcon({ className: "", iconSize: [0, 0], html: `<div class="rlab" style="--c:${color}">${text}</div>` }) }).addTo(keyL);
+}
+function placeLabel(lat, lon, text) {
+  L.circleMarker([lat, lon], { pane: "lbl", radius: 4, color: css("--halo"), weight: 2, fillColor: css("--ink"), fillOpacity: 1, interactive: false }).addTo(keyL);
+  L.marker([lat, lon], { pane: "lbl", interactive: false, keyboard: false, icon: L.divIcon({ className: "", iconSize: [0, 0], html: `<div class="plab">${text}</div>` }) }).addTo(keyL);
+}
+
+/* ── หมุดจุดวัด ── */
+const stL = L.layerGroup().addTo(map), mk = {};
+const popup = s => `<b>${s.name}</b><br><span class="soft small">${s.sub}</span><div style="margin:6px 0"><span class="chip ${LVC[s.lv]}">${LVT[s.lv]}</span> <span class="num">${s.val}</span></div><div class="small">${s.detail}</div><div class="small soft" style="margin-top:4px">${s.kind}</div><a class="small" href="https://www.google.com/maps?q=${s.lat},${s.lon}" target="_blank" rel="noopener">เปิด Google Maps</a>`;
+function drawStations() {
+  stL.clearLayers();
+  ST.forEach(s => {
+    const c = LVC[s.lv], hot = s.lv === 2 || s.lv === 1.5;
+    L.marker([s.lat, s.lon], { pane: "st", interactive: false, icon: L.divIcon({ className: "", iconSize: [0, 0], html: `<div class="dot ${c}${hot ? " pulse" : ""}"></div>` }) }).addTo(stL);
+    mk[s.id] = L.marker([s.lat, s.lon], { pane: "st", riseOnHover: true, title: s.name, icon: L.divIcon({ className: "", iconSize: [0, 0], html: `<div class="st ${c} ${s.side}"><span class="id">${s.id}</span><span class="sn">${s.short || s.name}</span><span class="v">${s.val}</span></div>` }) })
+      .bindPopup(popup(s), { offset: [0, -30], maxWidth: 260 }).addTo(stL);
+  });
+  $("list").innerHTML = ST.map(s => `<button class="it" data-id="${s.id}"><span class="badge ${LVC[s.lv]}">${s.id}</span><span><span class="nm">${s.name}</span><div class="small soft">${s.detail}</div></span><span class="val">${s.val}<div><span class="chip ${LVC[s.lv]}">${LVT[s.lv]}</span></div></span></button>`).join("");
+  document.querySelectorAll(".it").forEach(b => b.onclick = () => {
+    const s = ST.find(x => x.id === b.dataset.id);
+    $("map").scrollIntoView({ behavior: "smooth", block: "center" });
+    map.flyTo([s.lat, s.lon], Math.max(map.getZoom(), 13), { duration: .7 });
+    setTimeout(() => mk[s.id].openPopup(), 750);
+  });
+}
+const set = (key, o) => Object.assign(ST.find(x => x.key === key), o);
+
+/* ── ค่าสด (เกณฑ์เดียวกับ index.html) ── */
+async function loadStatus() {
+  const d = await j("status.json?t=" + Date.now());
+  const v = d.vg;
+  if (v) {
+    const t = parseT(v.t0), x = v.index_max, th = v.thresholds || { y: 35, o: 55, r: 75 }, late = Date.now() - t > 6 * 36e5;
+    const lv = x >= th.r ? 2 : x >= th.o ? 1.5 : x >= th.y ? 1 : 0;
+    set("vg", { lv: late ? "x" : lv, val: `${v.index_now.toFixed(0)}%`, short: "คลองกลางเมือง",
+      detail: `ดัชนีตอนนี้ ${v.index_now.toFixed(0)}% ของยอดน้ำ ก.ย.69 · สูงสุด 72 ชม.ข้างหน้า ${x.toFixed(0)}% · เกณฑ์ ${th.y}/${th.o}/${th.r}% · ${when(t)}${late ? " · ล่าช้า" : ""}` });
+  }
+  const a = d.point_A && d.point_A.latest;
+  if (a) {
+    const b = +a.below_ref_m, t = parseT(a.t), late = Date.now() - t > 2 * 864e5, lv = b <= 0 ? 2 : b <= .5 ? 1 : 0;
+    set("A", { lv: late ? "x" : lv, val: b >= 0 ? `−${b.toFixed(2)} ม.` : `+${(-b).toFixed(2)} ม.`, short: "จุด A",
+      detail: (b >= 0 ? `ต่ำกว่าตลิ่ง ${b.toFixed(2)} ม.` : `ล้นตลิ่ง ${(-b).toFixed(2)} ม.`) + ` · เฝ้าระวังเมื่อเหลือ ≤0.50 ม. · ${when(t)}${late ? " · ล่าช้า" : ""}` });
+  }
+}
+async function wl(id) {
+  const now = new Date(), st = new Date(now - 864e5);
+  const d = await j(`${API}/public/waterlevel_graph?station_type=tele_waterlevel&station_id=${id}&start_date=${ymd(st)}&end_date=${ymd(now)}%2023:59`);
+  const p = d.data.graph_data.filter(p => p.value != null); return p[p.length - 1];
+}
+async function loadKgt() {
+  const e = await wl(KGT), t = parseT(e.datetime), late = Date.now() - t > 150 * 6e4, q = e.discharge;
+  const lv = Math.max(lvl(e.value, 16.8, 17.0), lvl(q, 32, 40));
+  set("kgt", { lv: late ? "x" : lv, val: `${(+e.value).toFixed(2)} ม.`, short: "คลองหลวง",
+    detail: `ระดับ ${(+e.value).toFixed(2)} ม.รทก. · ต่ำกว่าตลิ่ง ${(18.37 - e.value).toFixed(2)} ม.${q != null ? ` · ไหล ${(+q).toFixed(0)} ลบ.ม./วิ` : ""} · ${when(t)}${late ? " · ล่าช้า" : ""}` });
+}
+async function loadBpk() {
+  const e = await wl(BPK), t = parseT(e.datetime);
+  set("bpk", { lv: "i", val: `${(+e.value).toFixed(2)} ม.`, short: "บางปะกง", detail: `ระดับ ${(+e.value).toFixed(2)} ม.รทก. · ตลิ่ง 1.67 · ขึ้นลงตามน้ำทะเล ไม่นับในสถานะ · ${when(t)}` });
+}
+async function loadDams() {
+  const d = await j(`${API}/analyst/dam`), m0 = d.data.dam_medium, m = m0.data || m0;
+  const pick = id => m.filter(x => x.dam.id === id && x.dam_storage != null).sort((a, b) => a.dam_date < b.dam_date ? 1 : -1)[0];
+  const kl = pick(DAM_KL), bb = pick(DAM_BB);
+  const dd = t => `${new Date(t).getDate()}/${new Date(t).getMonth() + 1}`;
+  if (kl) {
+    const rel = kl.dam_released != null ? +kl.dam_released : null, t = parseT(kl.dam_date + " 00:00"), late = Date.now() - t > 3 * 864e5;
+    set("kl", { lv: late ? "x" : lvl(rel, null, 2.0), val: rel != null ? `ระบาย ${rel.toFixed(2)}` : "–", short: "อ่างคลองหลวง",
+      detail: `ระบาย ${rel ?? "–"} ล้าน ลบ.ม./วัน (อันตราย ≥2.0) · น้ำเข้า ${kl.dam_inflow ?? "–"} · ความจุ ${(+kl.dam_storage_percent).toFixed(0)}% · ข้อมูลวันที่ ${dd(t)}` });
+  }
+  if (bb) {
+    const p = +bb.dam_storage_percent, st = +bb.dam_storage, room = st / p * 100 - st, net = (+bb.dam_inflow || 0) - (+bb.dam_released || 0), days = room > 0 && net > 0 ? room / net : null, t = parseT(bb.dam_date + " 00:00"), late = Date.now() - t > 3 * 864e5;
+    let lv = lvl(p, 90, 95); if (room <= 0 || (days != null && days <= 5)) lv = Math.max(lv, 1);
+    set("bb", { lv: late ? "x" : lv, val: `${p.toFixed(1)}%`, short: "อ่างบ้านบึง",
+      detail: `${st} / ${bb.dam.normal_storage} ล้าน ลบ.ม. · ${room <= 0 ? "เต็มแล้ว ล้นทางระบาย" : days != null ? `เต็มใน ~${Math.round(days)} วัน` : "น้ำออก ≥ เข้า ยังไม่เต็ม"} · เกณฑ์ 90/95% · ข้อมูลวันที่ ${dd(t)}` });
+  }
+}
+async function loadAll() {
+  await Promise.allSettled([loadStatus(), loadKgt(), loadBpk(), loadDams()]);
+  ST.forEach(s => { if (s.detail === "กำลังดึงข้อมูล…") s.detail = "ดึงข้อมูลไม่สำเร็จ ลองใหม่อีกครั้ง"; });
+  drawStations();
+  const lvs = ST.filter(s => typeof s.lv === "number").map(s => s.lv), top = lvs.length ? Math.max(...lvs) : "x";
+  $("overall").innerHTML = `<span class="chip ${LVC[top]}">สูงสุดบนแผนที่: ${LVT[top]}</span>`;
+  $("upd").textContent = `ดึงค่าล่าสุด ${pad(new Date().getHours())}:${pad(new Date().getMinutes())} น. · ดึงใหม่ทุก 10 นาที`;
+}
+
+/* ── ประกอบ ── */
+(async () => {
+  drawStations();
+  const [D, Hy] = await Promise.all([j("map_data.json"), j("hydro.json?v=2")]);
+  H = Hy; drawHydro();
+  $("km2").textContent = D.basin_km2;
+  const e = .00012;
+  D.basin.forEach(r => L.rectangle([[r[0] - e, r[1] - e], [r[2] + e, r[3] + e]], { pane: "basin", stroke: false, fillColor: css("--basin"), fillOpacity: .2, interactive: false }).addTo(map));
+  const up = c => c[0][0] <= c[c.length - 1][0] ? c : c.slice().reverse();   // คลองกลางเมือง: ไหลใต้→เหนือ (OSM วาดกลับ)
+  const town = D.town.map(up);
+  river([D.stem], css("--r-bb"), 2.5, "สายจากอ่างบ้านบึง (ประมาณ)", { dash: "6 6" });
+  river(D.east, css("--r-east"), 4, "คลองหลวง / ลำน้ำสายใหญ่ตะวันออก", { every: 2200 });
+  river(D.hk, css("--r-hk"), 4, "ห้วยเกวียน", { every: 1400 });
+  river(town, css("--r-town"), 5.5, "คลองกลางเมืองพนัส → เข้ากลางเมือง", { every: 1300 });
+  riverLabel(town[0], .2, "คลองกลางเมืองพนัส", css("--r-town"));
+  riverLabel(D.hk[0], .62, "ห้วยเกวียน", css("--r-hk"));
+  riverLabel(D.east[6], .5, "คลองหลวง", css("--r-east"));
+  riverLabel(D.stem, .35, "สายอ่างบ้านบึง", css("--r-bb"));
+  D.poi.filter(p => !/^อ่าง/.test(p.name)).forEach(p => placeLabel(p.lat, p.lon, p.name.replace(/ \(.*\)$/, "")));
+  D.sensors.filter(s => !["S1", "A"].includes(s.id)).forEach(s =>
+    L.marker([s.lat, s.lon], { pane: "lbl", title: s.name, icon: L.divIcon({ className: "", iconSize: [0, 0], html: `<div class="prop">${s.id}</div>` }) })
+      .bindPopup(`<b>${s.id} ${s.name}</b><br><span class="small soft">จุดเสนอติดเซนเซอร์ · ${s.pri}</span><div class="small" style="margin-top:4px">${s.why}</div><a class="small" href="${s.g}" target="_blank" rel="noopener">เปิด Google Maps</a>`, { maxWidth: 260 }).addTo(keyL));
+  matchMedia("(prefers-color-scheme: dark)").addEventListener("change", () => location.reload());
 })();
+loadAll();
+setInterval(loadAll, 10 * 6e4);
 </script>
 </body>
 </html>
