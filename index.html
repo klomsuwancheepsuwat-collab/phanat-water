@@ -94,6 +94,25 @@ button:disabled{opacity:.6}
 .htimes .late em::after{content:" ⚠";}
 @media (max-width:420px){.htimes{grid-template-columns:1fr}}
 .mini b{font-variant-numeric:tabular-nums;font-weight:700;margin-left:auto;padding-left:4px}
+.mini.tube{display:block;border-radius:12px;padding:6px 10px 3px;white-space:normal;overflow:visible}
+.tube .tn{display:flex;align-items:center;gap:6px;font-size:.8rem;margin-bottom:4px}
+.tube .tb{position:relative;display:block;height:22px;border-radius:11px;background:var(--track);overflow:hidden;box-shadow:inset 0 1px 2px rgba(0,0,0,.12)}
+.tube .tf{position:absolute;left:0;top:0;bottom:0;border-radius:11px;background:var(--water)}
+.tube[data-s="1"] .tf{background:var(--hero-1)} .tube[data-s="15"] .tf{background:var(--hero-15)} .tube[data-s="2"] .tf{background:var(--hero-2)} .tube[data-s="x"] .tf{background:var(--gray)}
+.tube .tk{position:absolute;top:0;bottom:0;width:3px;margin-left:-1.5px;z-index:1}
+.tube .tk.y{background:var(--hero-1);box-shadow:0 0 0 1.5px #3a3528} .tube .tk.r{background:var(--hero-2);box-shadow:0 0 0 1.5px #3a3528}
+.tube .tv{position:absolute;top:0;line-height:22px;padding:0 6px;z-index:2;font-family:var(--f-num,inherit);font-variant-numeric:tabular-nums;font-weight:700;font-size:.8rem;color:#fff;white-space:nowrap;text-shadow:0 0 3px rgba(0,0,0,.35)}
+.tube[data-s="1"] .tv:not(.out){color:#2A2205;text-shadow:none}
+.tube .tv{border-radius:11px;background:var(--water)} .tube[data-s="1"] .tv{background:var(--hero-1)} .tube[data-s="15"] .tv{background:var(--hero-15)} .tube[data-s="2"] .tv{background:var(--hero-2)} .tube[data-s="x"] .tv{background:var(--gray)}
+.tube .tv.out{background:var(--track)}
+.tube .tv.out{color:var(--ink);text-shadow:0 0 3px var(--surface),0 0 3px var(--surface)}
+.tube .tls{position:relative;display:block;height:13px}
+.tube .tl{position:absolute;top:0;font-size:.62rem;line-height:13px;font-weight:700;font-variant-numeric:tabular-nums}
+.tube .tl.y{transform:translateX(-100%);padding-right:3px;color:var(--yellow)} .tube .tl.r{padding-left:3px;color:var(--red)}
+.tube-key{grid-column:1/-1;font-size:.74rem;display:flex;align-items:center;gap:6px;opacity:.95}
+.tube-key span{display:inline-block;width:5px;height:14px;border-radius:2px;box-shadow:0 0 0 2px #fff}
+.tube-key .ky{background:var(--hero-1)} .tube-key .kr{background:var(--hero-2);margin-left:8px}
+@media (max-width:420px){.hero-list{grid-template-columns:1fr}}
 .mini span{overflow:hidden;text-overflow:ellipsis}
 .mini[data-s="0"] i{background:var(--hero-0)} .mini[data-s="0"] i::before{content:"✓"}
 .mini[data-s="1"] i{background:var(--hero-1);color:#2A2205} .mini[data-s="1"] i::before{content:"!"}
@@ -321,17 +340,20 @@ ul{margin:6px 0 0;padding-left:1.1rem}
       <div class="small soft" id="radarInfo" style="margin-top:4px"></div>
     </section>
 
-    <!-- 9) ข้อมูลเพิ่ม -->
+    <!-- 9) บางปะกง (ปลายน้ำ) -->
+    <section class="card" id="cBpk" data-s="x" data-o="8">
+      <div class="ch">
+        <div><h2>บางปะกง (ปลายน้ำ)<small>น้ำขึ้นสูงที่ปลายน้ำทำให้คลองระบายช้า · ขึ้นลงตามน้ำทะเลวันละ 2 รอบ · ไม่นับในสถานะรวม</small></h2>
+          <div class="meta"><span class="tag t-real">วัดจริง</span><span class="when" id="bpkWhen"></span></div></div>
+        <span class="chip cx" id="bpkChip">รอข้อมูล</span>
+      </div>
+      <div class="hl"><span class="big" id="bpkWl">–</span><span class="unit">ม. (รทก.)</span></div>
+      <div id="bpkViz"></div>
+      <div class="note" id="bpkInfo"></div>
+    </section>
+
+    <!-- 10) ข้อมูลเพิ่ม -->
     <section class="card more" id="cMore" data-o="99">
-      <details>
-        <summary><span>บางปะกง (ปลายน้ำ)</span><span class="chip cx" id="bpkChip">รอข้อมูล</span></summary>
-        <div class="body">
-          <div class="meta" style="margin-top:0"><span class="tag t-real">วัดจริง</span><span class="when" id="bpkWhen"></span></div>
-          <div class="hl"><span class="big" style="font-size:1.8rem" id="bpkWl">–</span><span class="unit">ม. (รทก.)</span></div>
-          <div class="note" id="bpkInfo"></div>
-          <div class="note">น้ำขึ้นสูงที่ปลายน้ำทำให้คลองระบายช้า</div>
-        </div>
-      </details>
       <details>
         <summary><span>ฝนพยากรณ์ 5 วัน</span><span class="tag t-fc">พยากรณ์</span></summary>
         <div class="body">
@@ -380,7 +402,7 @@ ul{margin:6px 0 0;padding-left:1.1rem}
 <script>
 const API = "https://api-v3.thaiwater.net/api/v1/thaiwater30";
 const OFFICE = [13.445963, 101.176828];
-const KGT = 504997, BPK = 154, KGT_BANK = 18.37, BPK_BANK = 1.665;
+const KGT = 504997, BPK = 154, KGT_BANK = 18.37, BPK_BANK = 1.665, BPK_Y = 1.4;
 const DAM_KL = 58864, DAM_BB = 622;
 const LV_TXT = ["ปกติ", "เฝ้าระวัง", "อันตราย"];
 const $ = id => document.getElementById(id);
@@ -533,7 +555,7 @@ function renderA(st) {
   $("aNote").innerHTML = note;
   const s = late ? "x" : ST_LV[lv];
   setCard("cA", s); chip("aChip", late ? "x" : lv, late ? "ค่าเก่า" : ["ปลอดภัย", "เฝ้าระวัง", "อันตราย"][lv]);
-  item("A", { name: "จุด A", mini: (below >= 0 ? "−" : "+") + Math.abs(below).toFixed(2) + " ม.", short: below >= 0 ? `ต่ำกว่าตลิ่ง ${below.toFixed(2)} ม.` : `ล้น ${(-below).toFixed(2)} ม.`, s, lv: late ? null : lv, card: "cA",
+  item("A", { name: "จุด A", mini: (below >= 0 ? "−" : "+") + Math.abs(below).toFixed(2) + " ม.", short: below >= 0 ? `ต่ำกว่าตลิ่ง ${below.toFixed(2)} ม.` : `ล้น ${(-below).toFixed(2)} ม.`, s, lv: late ? null : lv, card: "cA", g: { min: -3, max: 0.6, v: -below, y: -0.5, r: 0 },
     score: scoreOf(3.0 - below, 0, 3.0), gap: below <= 0 ? `ล้นตลิ่ง ${(-below * 100).toFixed(0)} ซม.` : lv ? `อีก ${(below * 100).toFixed(0)} ซม. ถึงตลิ่ง` : `อีก ${(below - 0.5).toFixed(2)} ม. ถึงเฝ้าระวัง` });
 }
 
@@ -577,7 +599,7 @@ function renderVg(st) {
   if (late) $("vgSay").innerHTML += `<div class="late-box">ข้อมูลล่าช้า (${agoTxt(gen)}) — เครื่องออฟฟิศอาจปิด/เน็ตหลุด ไม่นับในสถานะรวม</div>`;
   setCard("cVg", s); chip("vgChip", late ? "x" : +s || 0, late ? "ข้อมูลล่าช้า" : ["ปลอดภัย", "เฝ้าระวัง", "ใกล้อันตราย", "อันตราย"][dl]);
   if (!late) $("vgChip").className = "chip " + chipCls[s];
-  item("vg", { name: "คลองกลางเมือง", mname: "กลางเมือง", mini: `${mx.toFixed(0)}%`, short: `${mx.toFixed(0)}% (สูงสุด 72 ชม.)`, s, lv: late ? null : lv, card: "cVg", score: scoreOf(mx, 0, th.r),
+  item("vg", { name: "คลองกลางเมือง", mname: "กลางเมือง", mini: `${mx.toFixed(0)}%`, short: `${mx.toFixed(0)}% (สูงสุด 72 ชม.)`, s, lv: late ? null : lv, card: "cVg", g: { min: 0, max: Math.max(120, mx + 10), v: mx, y: th.y, r: th.r }, score: scoreOf(mx, 0, th.r),
     gap: nextTh ? `อีก ${(nextTh[0] - mx).toFixed(0)}% ถึง${nextTh[1]}` : `เกินอันตราย ${(mx - th.r).toFixed(0)}%` });
 }
 
@@ -638,7 +660,7 @@ async function loadKgt() {
   const sW = scoreOf(e.v, 15.5, 17.0), sQ = e.q != null ? scoreOf(e.q, 0, 40) : 0, byQ = sQ > sW;
   const gapW = e.v < 16.8 ? `ห่างเฝ้าระวัง ${(16.8 - e.v).toFixed(2)} ม.` : e.v < 17 ? `ห่างอันตราย ${(17 - e.v).toFixed(2)} ม.` : `เกินอันตราย ${(e.v - 17).toFixed(2)} ม.`;
   const gapQ = e.q < 32 ? `น้ำไหล ${e.q.toFixed(0)} · อีก ${(32 - e.q).toFixed(0)} ถึงเฝ้าระวัง` : e.q < 40 ? `น้ำไหล ${e.q.toFixed(0)} · อีก ${(40 - e.q).toFixed(0)} ถึงอันตราย` : `น้ำไหล ${e.q.toFixed(0)} เกินอันตราย`;
-  item("kgt", { name: "คลองหลวง", mini: e.v.toFixed(2), short: `${e.v.toFixed(2)} ม.`, s, lv: late ? null : lv, card: "cKgt", score: Math.max(sW, sQ), gap: byQ ? gapQ + " ลบ.ม./วิ" : gapW });
+  item("kgt", { name: "คลองหลวง", mini: e.v.toFixed(2), short: `${e.v.toFixed(2)} ม.`, s, lv: late ? null : lv, card: "cKgt", g: { min: Math.min(15.5, e.v - .2), max: Math.max(17.6, e.v + .2), v: e.v, y: 16.8, r: 17.0 }, score: Math.max(sW, sQ), gap: byQ ? gapQ + " ลบ.ม./วิ" : gapW });
 }
 
 /* ════════ อ่าง 2 ใบ ════════ */
@@ -673,7 +695,7 @@ async function loadDams() {
     $("bbInfo").innerHTML = `${bb.dam_storage} / ${bb.dam.normal_storage} ล้าน ลบ.ม. · ว่างอีก ${Math.max(0, room).toFixed(2)} ล้าน · เข้า <span class="num">${bb.dam_inflow ?? "–"}</span> ออก <span class="num">${bb.dam_released ?? "–"}</span> ล้าน/วัน`;
     const s = late ? "x" : ST_LV[lv];
     setCard("cBb", s); chip("bbChip", late ? "x" : lv, late ? "ข้อมูลล่าช้า" : ["ปลอดภัย", "เฝ้าระวัง", "อันตราย"][lv]);
-    item("bb", { name: "อ่างบ้านบึง", short: `${p.toFixed(0)}%`, s, lv: late ? null : lv, card: "cBb", score: scoreOf(p, 60, 95),
+    item("bb", { name: "อ่างบ้านบึง", short: `${p.toFixed(0)}%`, s, lv: late ? null : lv, card: "cBb", g: { min: 0, max: 100, v: Math.min(p, 100), y: 90, r: 95 }, score: scoreOf(p, 60, 95),
       gap: p < 90 ? `อีก ${(90 - p).toFixed(1)}% ถึงเฝ้าระวัง` + (days != null ? ` · เต็มใน ~${Math.round(days)} วัน` : "") : p < 95 ? `อีก ${(95 - p).toFixed(1)}% ถึงอันตราย` : "เกินอันตราย" });
   } else { setCard("cBb", "x"); chip("bbChip", "x", "ไม่มีข้อมูล"); noData("bbViz", "bbSay", "ไม่มีข้อมูลอ่างบ้านบึง"); item("bb", { name: "อ่างบ้านบึง", short: "ไม่มีข้อมูล", s: "x", lv: null, card: "cBb" }); }
   if (kl) {
@@ -691,7 +713,7 @@ async function loadDams() {
     $("klInfo").innerHTML = `น้ำเข้า <span class="num">${kl.dam_inflow ?? "–"}</span> ล้าน ลบ.ม./วัน`;
     const s = late ? "x" : ST_LV[lv];
     setCard("cKl", s); chip("klChip", late ? "x" : lv, late ? "ข้อมูลล่าช้า" : ["ปลอดภัย", "เฝ้าระวัง", "อันตราย"][lv]);
-    item("kl", { name: "อ่างคลองหลวง", mini: rel != null ? rel.toFixed(2) : "–", short: rel != null ? `ระบาย ${rel.toFixed(2)}` : "–", s, lv: late ? null : lv, card: "cKl", score: rel != null ? scoreOf(rel, 0, 2.0) : 0,
+    item("kl", { name: "อ่างคลองหลวง", mini: rel != null ? rel.toFixed(2) : "–", short: rel != null ? `ระบาย ${rel.toFixed(2)}` : "–", s, lv: late ? null : lv, card: "cKl", g: rel != null ? { min: 0, max: 3, v: rel, r: 2.0 } : null, score: rel != null ? scoreOf(rel, 0, 2.0) : 0,
       gap: rel == null ? "" : rel < 2 ? `ระบาย ${rel.toFixed(2)} · อีก ${(2 - rel).toFixed(2)} ล้าน ลบ.ม./วัน ถึงอันตราย` : "ระบายเกินอันตราย" });
   } else { setCard("cKl", "x"); chip("klChip", "x", "ไม่มีข้อมูล"); noData("klViz", "klSay", "ไม่มีข้อมูลอ่างคลองหลวง"); item("kl", { name: "อ่างคลองหลวง", short: "ไม่มีข้อมูล", s: "x", lv: null, card: "cKl" }); }
 }
@@ -724,23 +746,31 @@ async function loadRain() {
   $("rainInfo").innerHTML = `${esc(best.name)} (${best.km.toFixed(0)} กม.) · สะสม 24 ชม. <span class="num">${best.r24.toFixed(0)}</span> มม. · ${n} สถานี` + (late ? `<div class="late-box">ข้อมูลล่าช้า ไม่นับในสถานะรวม</div>` : "");
   const s = late ? "x" : ST_LV[lv];
   setCard("cRain", s); chip("rainChip", late ? "x" : lv, late ? "ข้อมูลล่าช้า" : ["ไม่หนัก", "เฝ้าระวัง", "อันตราย"][lv]);
-  item("rain", { name: "ฝน 1 ชม.", short: `${best.r1.toFixed(0)} มม.`, s, lv: late ? null : lv, card: "cRain", score: scoreOf(best.r1, 0, 35),
+  item("rain", { name: "ฝน 1 ชม.", short: `${best.r1.toFixed(0)} มม.`, s, lv: late ? null : lv, card: "cRain", g: { min: 0, max: 50, v: best.r1, y: 20, r: 35 }, score: scoreOf(best.r1, 0, 35),
     gap: best.r1 < 20 ? `อีก ${(20 - best.r1).toFixed(0)} มม. ถึงเฝ้าระวัง` : best.r1 < 35 ? `อีก ${(35 - best.r1).toFixed(0)} มม. ถึงอันตราย` : `เกินเกณฑ์อันตราย (35 มม./ชม.)` });
 }
 
 async function loadBpk() {
   let pts;
-  if (DEMO) pts = [{ value: DEMO === "red" ? 1.5 : 1.1, datetime: tstr(Date.now() - 15 * 6e4) }];
+  if (DEMO) pts = [{ value: DEMO === "red" ? 1.5 : 1.1, datetime: tstr(Date.now() - (DEMO === "stale" ? 5 * 36e5 : 15 * 6e4)) }];
   else {
     const now = new Date(), st = new Date(now - 864e5);
     const d = await j(`${API}/public/waterlevel_graph?station_type=tele_waterlevel&station_id=${BPK}&start_date=${ymd(st)}&end_date=${ymd(now)}%2023:59`);
     pts = d.data.graph_data.filter(p => p.value != null);
   }
   const e = pts[pts.length - 1], mx = Math.max(...pts.map(p => p.value));
+  const late = setWhen("bpkWhen", parseT(e.datetime), STALE.station), lv = lvl(e.value, BPK_Y, BPK_BANK);
   $("bpkWl").textContent = e.value.toFixed(2);
-  setWhen("bpkWhen", parseT(e.datetime), STALE.station);
+  $("bpkViz").innerHTML = hbar({ min: -2, max: 2.2, fill: e.value, fillC: ["var(--water)", "var(--yellow)", "var(--red)"][lv], h: 92, ty: 34, th: 18, aria: `บางปะกง ${e.value} ม.รทก.`,
+    ticks: [{ v: BPK_Y, c: "var(--yellow)", label: `น้ำขึ้นสูง ${BPK_Y}`, anchor: "end", lw: 90 }, { v: BPK_BANK, c: "var(--red)", label: `ตลิ่ง ${BPK_BANK}`, anchor: "start", lw: 70 }],
+    refs: [{ v: 1.45, label: "ก.ย.69 1.45", anchor: "end", below: true }],
+    marks: [{ v: e.value, label: `ตอนนี้ ${e.value.toFixed(2)}`, lw: 100 }] });
   $("bpkInfo").textContent = `สูงสุด 24 ชม. ${mx.toFixed(2)} ม. (ตอนท่วม ก.ย. 1.45) · ตลิ่ง ${BPK_BANK} ม.`;
-  chip("bpkChip", mx >= 1.4 ? 1 : 0, mx >= 1.4 ? "น้ำขึ้นสูง" : "ปกติ");
+  const hi = mx >= BPK_Y, s = late ? "x" : ST_LV[lv];
+  setCard("cBpk", late ? "x" : hi ? "1" : "0");
+  chip("bpkChip", late ? "x" : hi ? 1 : 0, late ? "ข้อมูลล่าช้า" : hi ? "น้ำขึ้นสูง" : "ปกติ");
+  item("bpk", { name: "บางปะกง", info: true, mini: e.value.toFixed(2), short: `${e.value.toFixed(2)} ม.`, s, lv: null, card: "cBpk",
+    g: { min: -2, max: 2.2, v: e.value, y: BPK_Y, r: BPK_BANK } });
 }
 
 async function loadFc() {
@@ -995,9 +1025,23 @@ $("radarPlay").addEventListener("click", () => {
 /* ════════ รวมสถานะ + เรียงการ์ด ════════ */
 const HERO = { 0: ["🟢", "ปลอดภัย"], 1: ["🟡", "เฝ้าระวัง"], 2: ["🔴", "อันตราย"], x: ["⚪", "ยืนยันไม่ได้"] };
 const RANK = { "2": 3, "15": 2, "1": 1 };
+/* หลอดวัดในป้ายรวม: น้ำในหลอด + ค่าในหลอด + ขีดเหลือง (เฝ้าระวัง) / ขีดแดง (อันตราย) */
+function tube(i) {
+  const g = i.g, val = esc(i.mini ?? i.short ?? "");
+  const head = `<span class="tn"><i aria-hidden="true"></i>${esc(i.mname || i.name)}</span>`;
+  if (!g) return `<a class="mini tube" data-s="${i.s}" href="#${i.card}">${head}<span class="tb"><span class="tv out" style="left:8px">${val}</span></span></a>`;
+  const pc = v => Math.max(0, Math.min(100, (v - g.min) / (g.max - g.min) * 100));
+  const f = Math.max(pc(g.v), 3), inside = f >= 38;
+  const tick = (v, c) => v == null ? "" : `<span class="tk ${c}" style="left:${pc(v)}%"></span>`;
+  const lab = (v, c) => v == null || g.cat ? "" : `<span class="tl ${c}" style="left:${pc(v)}%">${+v.toFixed(2)}</span>`;
+  return `<a class="mini tube" data-s="${i.s}" href="#${i.card}" aria-label="${esc(i.name)} ${val}">${head}`
+    + `<span class="tb"><span class="tf" style="width:${f}%"></span>${tick(g.y, "y")}${tick(g.r, "r")}`
+    + `<span class="tv${inside ? "" : " out"}" style="${inside ? "left:4px" : `left:${f}%`}">${val}</span></span>`
+    + `<span class="tls">${lab(g.y, "y")}${lab(g.r, "r")}</span></a>`;
+}
 function renderHero(fails) {
-  const list = ["A", "vg", "kgt", "bb", "kl", "rain", "radar"].map(k => ITEMS[k]).filter(Boolean);
-  const fresh = list.filter(i => i.lv != null), late = list.filter(i => i.lv == null);
+  const list = ["A", "vg", "kgt", "bb", "kl", "rain", "radar", "bpk"].map(k => ITEMS[k]).filter(Boolean);
+  const fresh = list.filter(i => !i.info && i.lv != null), late = list.filter(i => !i.info && i.lv == null);   // info = โชว์หลอดแต่ไม่นับสถานะรวม (บางปะกง)
   const core = ["kgt", "vg"].filter(k => !ITEMS[k] || ITEMS[k].lv == null);
   let lv = fresh.length ? Math.max(...fresh.map(i => i.lv)) : null;
   if (lv === 0 && core.length === 2) lv = null;   // ข้อมูลหลักทั้งคลองหลวงและคลองกลางเมืองขาด → ไม่ฟันธงเขียว
@@ -1012,7 +1056,7 @@ function renderHero(fails) {
   const warn = late.map(i => i.name);
   $("heroWarn").hidden = !warn.length && !fails.length;
   $("heroWarn").textContent = [warn.length ? `ข้อมูลล่าช้า/ไม่มี (ไม่นับรวม): ${warn.join(", ")}` : "", fails.length ? `ดึงไม่ได้: ${fails.join(", ")}` : ""].filter(Boolean).join(" · ");
-  $("heroList").innerHTML = list.map(i => `<a class="mini" data-s="${i.s}" href="#${i.card}"><i aria-hidden="true"></i><span>${esc(i.mname || i.name)}</span><b>${esc(i.mini ?? i.short ?? "")}</b></a>`).join("");
+  $("heroList").innerHTML = list.map(tube).join("") + `<div class="tube-key"><span class="ky"></span>เฝ้าระวัง <span class="kr"></span>อันตราย (วิกฤต)</div>`;
   const TW = [["จุด A", "aWhen"], ["คลองกลางเมือง", "vgWhen"], ["คลองหลวง", "kgtWhen"], ["อ่างบ้านบึง", "bbWhen"], ["อ่างคลองหลวง", "klWhen"],
               ["ฝน 1 ชม.", "rainWhen"], ["เรดาร์", "radarWhen"], ["บางปะกง", "bpkWhen"]];
   $("heroTimes").innerHTML = "<b>อัปเดตล่าสุด</b>" + TW.map(([n, id]) => {
@@ -1040,7 +1084,7 @@ async function load() {
     const r = res[6].value, stale = /ภาพเก่า/.test($("radarChip").textContent);
     setCard("radar", stale ? "x" : ST_LV[r.lv]);
     if (stale) $("radarChip").className = "chip cx";
-    item("radar", { name: "เรดาร์ฝน", mini: stale ? "เก่า" : r.lv ? LV_TXT[r.lv] : "ปกติ", short: stale ? "ภาพเก่า" : r.lv ? LV_TXT[r.lv] : "ไม่มีฝนหนักในลุ่ม", s: stale ? "x" : ST_LV[r.lv], lv: stale ? null : r.lv, card: "radar", score: r.lv ? 0.5 + r.lv * 0.3 : 0.05, gap: r.lv ? (r.txt || "").replace(/^เรดาร์: /, "") : "" });
+    item("radar", { name: "เรดาร์ฝน", mini: stale ? "เก่า" : r.lv ? LV_TXT[r.lv] : "ปกติ", short: stale ? "ภาพเก่า" : r.lv ? LV_TXT[r.lv] : "ไม่มีฝนหนักในลุ่ม", s: stale ? "x" : ST_LV[r.lv], lv: stale ? null : r.lv, card: "radar", g: stale ? null : { min: 0, max: 2.4, v: r.lv || 0.12, y: 1, r: 2, cat: 1 }, score: r.lv ? 0.5 + r.lv * 0.3 : 0.05, gap: r.lv ? (r.txt || "").replace(/^เรดาร์: /, "") : "" });
   }
   renderHero(fails);
   const n = new Date(); $("heroTime").textContent = `ดึงล่าสุด ${pad(n.getHours())}:${pad(n.getMinutes())} น. · ดึงใหม่เองทุก 10 นาที และทุกครั้งที่กลับมาเปิด`;
