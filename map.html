@@ -79,7 +79,14 @@ header{display:flex;justify-content:space-between;align-items:flex-end;gap:12px;
 .rlab{font:600 12.5px var(--f-body);white-space:nowrap;color:var(--c);text-shadow:0 0 3px var(--halo),0 0 3px var(--halo),0 0 6px var(--halo);pointer-events:none;transform:translate(-50%,-50%)}
 .plab{font:600 11.5px var(--f-body);white-space:nowrap;color:var(--ink);text-shadow:0 0 3px var(--halo),0 0 3px var(--halo);pointer-events:none;transform:translate(10px,-50%)}
 .town{font:600 15px var(--f-head);letter-spacing:.02em;color:var(--ink);text-shadow:0 0 4px var(--halo),0 0 4px var(--halo),0 0 8px var(--halo);pointer-events:none;transform:translate(-50%,-50%);white-space:nowrap}
-.far .arw,.far .rlab{display:none}
+/* ป้ายย่อตามซูม: z-far ≤10 = แค่รหัส · z-mid 11-12 = รหัส+ค่า · z-near ≥13 = เต็ม */
+.z-far .arw,.z-far .rlab,.z-far .plab,.z-far .prop,.z-mid .plab{display:none}
+.z-far .st .sn,.z-far .st .v,.z-mid .st .sn{display:none}
+.z-far .st{padding:2px;gap:0;border-width:0;border-radius:6px;box-shadow:0 1px 4px rgba(0,0,0,.25)}
+.z-far .st.l{transform:translate(calc(-100% - 8px),-50%)} .z-far .st:not(.l):not(.t):not(.b){transform:translate(8px,-50%)}
+.z-far .st .id{font-size:10px}
+.z-far .st.l{border-width:0;padding:2px}
+.z-mid .st{gap:4px;padding:2px 6px 2px 4px;font-size:11px} .z-mid .st .v{font-size:11px}
 .arw{width:14px;height:14px;transform-origin:50% 50%;pointer-events:none}
 
 /* ── หมุดจุดวัด ── */
@@ -88,7 +95,7 @@ header{display:flex;justify-content:space-between;align-items:flex-end;gap:12px;
 .st.t{transform:translate(-50%,calc(-100% - 10px))}
 .st.b{transform:translate(-50%,10px)}
 .st .v{font:500 12px var(--f-num);color:var(--ink-soft)}
-@media (max-width:560px){.st .sn{display:none}.st{gap:4px;padding:2px 6px 2px 4px}.st.l{padding:2px 4px 2px 6px}.rlab{font-size:11px}.plab{display:none}}
+@media (max-width:560px){.st .sn{display:none}.rlab{font-size:11px}.plab{display:none}}
 .st .id{font:600 11px var(--f-num);background:var(--lc);color:#fff;border-radius:4px;padding:0 4px}
 .dot{position:absolute;left:0;top:0;width:12px;height:12px;transform:translate(-50%,-50%);border-radius:50%;background:var(--lc);border:2px solid var(--surface);box-shadow:0 0 0 1px var(--lc)}
 .pulse{animation:pulse 1.8s ease-out infinite}
@@ -197,7 +204,7 @@ const ST = [
 ST.forEach(s => { s.lv = "x"; s.val = "–"; s.detail = "กำลังดึงข้อมูล…"; });
 
 /* ── แผนที่ ── */
-const map = L.map("map", { zoomControl: false, scrollWheelZoom: false, attributionControl: true });
+const map = L.map("map", { zoomControl: false, scrollWheelZoom: false, zoomSnap: 0, attributionControl: true });
 L.control.zoom({ position: "topright" }).addTo(map);
 L.control.scale({ metric: true, imperial: false, position: "bottomleft" }).addTo(map);
 map.attributionControl.setPrefix(false);
@@ -216,8 +223,21 @@ const base = {
 };
 const labelsLayer = () => L.tileLayer(esri(dark() ? "World_Dark_Gray_Reference" : "World_Light_Gray_Reference"), { maxZoom: 16, pane: "labels", opacity: .7 });
 let baseNow = "map", baseL = base.map().addTo(map), labL = labelsLayer().addTo(map);
-const farCls = () => map.getContainer().classList.toggle("far", map.getZoom() < 11);
+const farCls = () => { const z = map.getZoom(), c = map.getContainer().classList;
+  c.toggle("z-far", z <= 10); c.toggle("z-mid", z > 10 && z < 13); c.toggle("z-near", z >= 13); };
 map.on("zoomend", farCls);
+/* บีบนิ้วบนแทร็กแพด (ctrl+wheel) / Safari gesture = ซูมแผนที่ ไม่ใช่ซูมทั้งหน้า · เลื่อนสองนิ้วปกติยังเลื่อนหน้าได้ */
+map.getContainer().addEventListener("wheel", e => {
+  if (!e.ctrlKey) return;
+  e.preventDefault();
+  map.setZoomAround(map.mouseEventToContainerPoint(e), Math.max(8, Math.min(18, map.getZoom() - e.deltaY * 0.012)), { animate: false });
+}, { passive: false });
+let gz = null;
+["gesturestart", "gesturechange", "gestureend"].forEach(t => map.getContainer().addEventListener(t, e => {
+  e.preventDefault();
+  if (t === "gesturestart") gz = map.getZoom();
+  else if (t === "gesturechange" && gz != null) map.setZoom(gz + Math.log2(e.scale), { animate: false });
+}, { passive: false }));
 map.on("zoomend", () => { const on = map.getZoom() <= 12; if (on !== map.hasLayer(labL)) on ? labL.addTo(map) : map.removeLayer(labL); });   // ป้าย Esri ซูมใกล้แล้วเบลอ/ใหญ่เกิน
 function setBase(k) {
   baseNow = k; map.removeLayer(baseL); baseL = base[k]().addTo(map); baseL.bringToBack();
