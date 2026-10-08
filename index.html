@@ -97,7 +97,11 @@ button:disabled{opacity:.6}
 .mini.tube{display:block;border-radius:12px;padding:6px 10px 3px;white-space:normal;overflow:visible}
 .tube .tn{display:flex;align-items:flex-start;gap:6px;font-size:.84rem;margin-bottom:5px;line-height:1.3}
 .tube .tn i{margin-top:1px} .tube .tn b{display:block;font-weight:700} .tube .tn small{display:block;font-size:.68rem;font-weight:500;color:var(--ink-soft)}
-.tube .tb{position:relative;display:block;height:22px;border-radius:11px;background:var(--track);overflow:hidden;box-shadow:inset 0 1px 2px rgba(0,0,0,.12)}
+.tube .tr{display:flex;align-items:center;gap:6px}
+.tube .tw{flex:none;width:28px;text-align:right;font-style:normal;font-size:.66rem;font-weight:700;font-variant-numeric:tabular-nums;color:var(--ink-soft)}
+.tube .tls{margin-right:34px}
+.tube-key .kw{font-style:normal;margin-left:auto;opacity:.85}
+.tube .tb{flex:1;min-width:0;position:relative;display:block;height:22px;border-radius:11px;background:var(--track);overflow:hidden;box-shadow:inset 0 1px 2px rgba(0,0,0,.12)}
 .tube .tf{position:absolute;left:0;top:0;bottom:0;border-radius:11px;background:var(--water)}
 .tube[data-s="1"] .tf{background:var(--hero-1)} .tube[data-s="15"] .tf{background:var(--hero-15)} .tube[data-s="2"] .tf{background:var(--hero-2)} .tube[data-s="x"] .tf{background:var(--gray)}
 .tube .tk{position:absolute;top:0;bottom:0;width:3px;margin-left:-1.5px;z-index:1}
@@ -1072,6 +1076,25 @@ $("radarPlay").addEventListener("click", () => {
 const HERO = { 0: ["🟢", "ปลอดภัย"], 1: ["🟡", "เฝ้าระวัง"], 2: ["🔴", "อันตราย"], x: ["⚪", "ยืนยันไม่ได้"] };
 const RANK = { "2": 3, "15": 2, "1": 1 };
 /* ชื่อหลอด: [วัดอะไร, ที่ไหน/หน่วย, ข้อความในหลอด] */
+/* ความสำคัญของแต่ละตัวต่อ "ในเมืองพนัสจะท่วมไหม" (รวม 100) — เรียงหลอดตามนี้ · แก้ที่นี่ที่เดียว · หลักฐาน: scratch/flood-office-phanat/
+   vg = ย้อนหลัง ก.ย.69 🔴 ก่อน A ล้น ~40 ชม. ปี 64-68 ไม่เตือนหลอก · A = น้ำจริงในพื้นที่แต่แทบไม่มีเวลาล่วงหน้า (ห้วยเกวียนไม่ใช่ทางน้ำเข้าเมืองหลัก — แก้ 5 ต.ค.)
+   kgt ช้ากว่า vg 32 ชม. + ต.ค.63 เตือนหลอก · kl = ตัวเดียวที่ทันปี 56 (แบบจำลอง) · radar/rain = วิจารณญาณ หลักฐานบาง */
+const IMP_SET = {
+  r1: { vg: 28, A: 18, kgt: 12, kl: 12, r5: 8, radar: 7, rain: 6, bb: 6, bpk: 3 },
+  /* ช่วงเสี่ยงท่วมรอบสอง (หลอดฝน 5 วันโผล่ = ฝน 5 วัน ≥101 มม. ภายใน 15 วัน · ดินอิ่ม อ่างเต็ม) — ปี 56 รอบสอง S1/ฝนพลาด อ่าง+ฝน 5 วันจับได้ · สัดส่วนเป็นวิจารณญาณ */
+  r2: { vg: 20, kl: 18, A: 16, kgt: 14, r5: 14, bb: 7, radar: 4, rain: 4, bpk: 3 },
+};
+let IMP = {}, IMP_R2 = false;
+/* เลือกชุดตามสถานการณ์ แล้วเกลี่ยเฉพาะหลอดที่มีอยู่ให้รวม 100 (ปัดแบบเศษเหลือมากสุดได้ก่อน) */
+function pickImp() {
+  IMP_R2 = !!ITEMS.r5;
+  const set = IMP_SET[IMP_R2 ? "r2" : "r1"], ks = Object.keys(set).filter(k => ITEMS[k]), tot = ks.reduce((a, k) => a + set[k], 0);
+  const raw = ks.map(k => [k, set[k] * 100 / tot]), out = {};
+  raw.forEach(([k, v]) => out[k] = Math.floor(v));
+  let left = 100 - Object.values(out).reduce((a, b) => a + b, 0);
+  raw.sort((a, b) => (b[1] % 1) - (a[1] % 1)).forEach(([k]) => { if (left-- > 0) out[k]++; });
+  IMP = out;
+}
 const TUBE = {
   A: ["ระดับน้ำห้วยเกวียน (จุด A)", "สะพานบ้านเกาะสะเดา · เทียบตลิ่ง · อ่านด้วยตา", i => i.short],
   vg: ["น้ำคลองกลางเมืองพนัส (ผ่านออฟฟิศ)", "แบบจำลอง · ยอดน้ำ 72 ชม.ข้างหน้า เทียบท่วม ก.ย.69 = 100%", i => i.mini],
@@ -1086,19 +1109,21 @@ const TUBE = {
 /* หลอดวัดในป้ายรวม: น้ำในหลอด + ค่าในหลอด + ขีดเหลือง (เฝ้าระวัง) / ขีดแดง (อันตราย) */
 function tube(i) {
   const g = i.g, L = TUBE[i.k] || [i.name, "", null], val = esc(g && L[2] ? L[2](i) : (i.short ?? i.mini ?? ""));
+  const w = IMP[i.k] != null ? `<em class="tw" title="ความสำคัญ">${IMP[i.k]}%</em>` : "";
   const head = `<span class="tn"><i aria-hidden="true"></i><span><b>${esc(L[0])}</b>${L[1] ? `<small>${esc(L[1])}</small>` : ""}</span></span>`;
-  if (!g) return `<a class="mini tube" data-s="${i.s}" href="#${i.card}">${head}<span class="tb"><span class="tv out" style="left:8px">${val}</span></span></a>`;
+  if (!g) return `<a class="mini tube" data-s="${i.s}" href="#${i.card}">${head}<span class="tr"><span class="tb"><span class="tv out" style="left:8px">${val}</span></span>${w}</span></a>`;
   const pc = v => Math.max(0, Math.min(100, (v - g.min) / (g.max - g.min) * 100));
   const f = Math.max(pc(g.v), 3), inside = f >= 38;
   const tick = (v, c) => v == null ? "" : `<span class="tk ${c}" style="left:${pc(v)}%"></span>`;
   const lab = (v, c) => v == null || g.cat ? "" : `<span class="tl ${c}" style="left:${pc(v)}%">${+v.toFixed(2)}</span>`;
   return `<a class="mini tube" data-s="${i.s}" href="#${i.card}" aria-label="${esc(i.name)} ${val}">${head}`
-    + `<span class="tb"><span class="tf" style="width:${f}%"></span>${tick(g.y, "y")}${tick(g.r, "r")}`
-    + `<span class="tv${inside ? "" : " out"}" style="${inside ? "left:4px" : `left:${f}%`}">${val}</span></span>`
+    + `<span class="tr"><span class="tb"><span class="tf" style="width:${f}%"></span>${tick(g.y, "y")}${tick(g.r, "r")}`
+    + `<span class="tv${inside ? "" : " out"}" style="${inside ? "left:4px" : `left:${f}%`}">${val}</span></span>${w}</span>`
     + `<span class="tls">${lab(g.y, "y")}${lab(g.r, "r")}</span></a>`;
 }
 function renderHero(fails) {
-  const list = ["A", "vg", "kgt", "bb", "kl", "rain", "r5", "radar", "bpk"].map(k => ITEMS[k]).filter(Boolean);
+  pickImp();
+  const list = Object.keys(IMP).sort((a, b) => IMP[b] - IMP[a]).map(k => ITEMS[k]);   // เรียงตามความสำคัญ (ชุดตามสถานการณ์)
   const fresh = list.filter(i => !i.info && i.lv != null), late = list.filter(i => !i.info && i.lv == null);   // info = โชว์หลอดแต่ไม่นับสถานะรวม (บางปะกง)
   const core = ["kgt", "vg"].filter(k => !ITEMS[k] || ITEMS[k].lv == null);
   let lv = fresh.length ? Math.max(...fresh.map(i => i.lv)) : null;
@@ -1114,7 +1139,7 @@ function renderHero(fails) {
   const warn = late.map(i => i.name);
   $("heroWarn").hidden = !warn.length && !fails.length;
   $("heroWarn").textContent = [warn.length ? `ข้อมูลล่าช้า/ไม่มี (ไม่นับรวม): ${warn.join(", ")}` : "", fails.length ? `ดึงไม่ได้: ${fails.join(", ")}` : ""].filter(Boolean).join(" · ");
-  $("heroList").innerHTML = list.map(tube).join("") + `<div class="tube-key"><span class="ky"></span>เฝ้าระวัง <span class="kr"></span>อันตราย (วิกฤต)</div>`;
+  $("heroList").innerHTML = list.map(tube).join("") + `<div class="tube-key"><span class="ky"></span>เฝ้าระวัง <span class="kr"></span>อันตราย (วิกฤต) <em class="kw">% ท้ายหลอด = ความสำคัญ · ${IMP_R2 ? "ชุดช่วงเสี่ยงท่วมรอบสอง" : "ชุดปกติ"}</em></div>`;
   for (const tb of document.querySelectorAll("#heroList .tb")) {   // ตัวเลขยาวกว่าน้ำในหลอด → ย้ายไปต่อท้ายน้ำ / ชิดขวาถ้าล้นหลอด
     const tv = tb.querySelector(".tv"), tf = tb.querySelector(".tf"); if (!tv || !tf) continue;
     if (!tv.classList.contains("out") && tv.offsetWidth + 8 > tf.offsetWidth) { tv.classList.add("out"); tv.style.left = tf.offsetWidth + "px"; }
