@@ -101,6 +101,10 @@ button:disabled{opacity:.6}
 .tube .tw{flex:none;width:28px;text-align:right;font-style:normal;font-size:.66rem;font-weight:700;font-variant-numeric:tabular-nums;color:var(--ink-soft)}
 .tube .tls{margin-right:34px}
 .mini.tube.all{grid-column:1/-1;box-shadow:0 0 0 2px rgba(0,0,0,.18)}
+.tube .tn .eta{margin-left:auto;text-align:right;padding:3px 9px;border-radius:9px;background:var(--surface-2,rgba(0,0,0,.05));max-width:58%}
+.tube .tn .eta b{font-size:.92rem} .tube .eta[data-s="2"]{background:#c62828;color:#fff} .tube .eta[data-s="2"] small{color:#fde}
+.tube .eta[data-s="15"]{background:#e8892b;color:#fff} .tube .eta[data-s="15"] small{color:#fff3e6}
+@media (max-width:560px){.tube .tn{flex-wrap:wrap} .tube .tn .eta{margin-left:0;text-align:left;max-width:100%;width:100%}}
 .tube-key .kw{font-style:normal;margin-left:auto;opacity:.85}
 .tube .tb{flex:1;min-width:0;position:relative;display:block;height:22px;border-radius:11px;background:var(--track);overflow:hidden;box-shadow:inset 0 1px 2px rgba(0,0,0,.12)}
 .tube .tf{position:absolute;left:0;top:0;bottom:0;border-radius:11px;background:var(--water)}
@@ -534,6 +538,7 @@ function hbar(o) {
 /* ── ทะเบียนตัวชี้วัด (ใช้ทำป้ายรวม + เรียงการ์ด) ──
    s = สถานะแสดงผล "0" "1" "15" "2" "x" · lv = 0/1/2 เพื่อรวม (null = ล่าช้า/ไม่มี ไม่นับ) · score 0..1+ = ใกล้เกณฑ์อันตรายแค่ไหน */
 const ITEMS = {};
+let VG = null;   // ชุดพยากรณ์คลองกลางเมือง (ไว้คำนวณเวลาท่วมในหลอดรวม)
 function item(k, o) { ITEMS[k] = Object.assign({ k }, o); }
 const scoreOf = (v, floor, red) => Math.max(0, (v - floor) / (red - floor));
 
@@ -598,7 +603,7 @@ function vgSpark(v) {
   return `<div class="small soft" style="margin-top:10px;font-weight:600">72 ชม. ข้างหน้า (ค่ากลางของแบบจำลองฝนทุกเจ้า)</div>` + s + "</svg>";
 }
 function renderVg(st) {
-  const v = st && st.vg;
+  const v = st && st.vg; VG = null;
   if (!v) { setCard("cVg", "x"); chip("vgChip", "x", "ไม่มีข้อมูล"); $("vgBig").textContent = "–"; $("vgWhen").textContent = ""; $("vgSpark").innerHTML = ""; noData("vgViz", "vgSay", "ไม่มีข้อมูลแบบจำลอง (เครื่องออฟฟิศยังไม่ส่ง หรืออ่าน status.json ไม่ได้)"); item("vg", { name: "คลองกลางเมืองพนัส", short: "ไม่มีข้อมูล", s: "x", lv: null, card: "cVg" }); return; }
   const th = v.thresholds || { y: 35, o: 55, r: 75 }, gen = new Date(st.generated).getTime(), late = setWhen("vgWhen", gen, STALE.vg);
   const now = v.index_now != null ? v.index_now : (v.series ? v.series[0] : null), mx = v.index_max;
@@ -617,6 +622,7 @@ function renderVg(st) {
     + (nextTh ? ` · ยังห่างเกณฑ์${nextTh[1]} ${(nextTh[0] - mx).toFixed(0)}%` : " · เกินเกณฑ์อันตรายแล้ว")
     + (v.index_hi != null && v.index_hi - mx >= 5 ? `<br><span class="soft" style="font-weight:400">ถ้าฝนตกหนักกว่าคาด อาจถึง ${v.index_hi.toFixed(0)}%</span>` : "");
   $("vgSpark").innerHTML = vgSpark(v);
+  if (!late) VG = v;
   if (late) $("vgSay").innerHTML += `<div class="late-box">ข้อมูลล่าช้า (${agoTxt(gen)}) — เครื่องออฟฟิศอาจปิด/เน็ตหลุด ไม่นับในสถานะรวม</div>`;
   setCard("cVg", s); chip("vgChip", late ? "x" : +s || 0, late ? "ข้อมูลล่าช้า" : ["ปลอดภัย", "เฝ้าระวัง", "ใกล้อันตราย", "อันตราย"][dl]);
   if (!late) $("vgChip").className = "chip " + chipCls[s];
@@ -1111,6 +1117,21 @@ function composite() {
   return { k: "all", name: "ภาพรวม", info: true, mini: `${v.toFixed(0)} / 100`, s, lv: null, card: "heroList", cov: wt,
     g: { min: 0, max: 130, v: Math.min(v, 130), y: 50, r: 100 } };
 }
+/* เวลาคาดน้ำท่วมเมือง (กรอบขวาหลอดรวม): ยึดแบบจำลองคลองกลางเมือง 72 ชม. · 100% = ยอดน้ำ ก.ย.69 (ตลาดท่วม 30–60 ซม.)
+   จุด A ล้นตลิ่งแล้ว = ข้ามไปบอกว่าท่วมได้ทุกเมื่อ */
+function floodEta() {
+  const A = ITEMS.A;
+  if (A && A.lv != null && A.g && A.g.v >= 0) return { s: "2", t: "ห้วยเกวียนล้นตลิ่งแล้ว", d: "เมืองเริ่มท่วมได้ทุกเมื่อ" };
+  if (!VG || !VG.series || !VG.t0) return { s: "x", t: "ประเมินเวลาท่วมไม่ได้", d: "แบบจำลองคลองกลางเมืองล่าช้า/ไม่มีข้อมูล" };
+  const ser = VG.series, t0 = Date.parse(VG.t0.replace(" ", "T") + ":00+07:00"), r = (VG.thresholds || {}).r || 75;
+  const at = lim => ser.findIndex(p => p >= lim), mx = Math.max(...ser);
+  const when = i => { const t = t0 + i * 3600e3, h = Math.round((t - Date.now()) / 3600e3); return h <= 0 ? "ตอนนี้" : `อีก ~${h} ชม. · ${clock(t)}`; };
+  const i100 = at(100), ir = at(r);
+  if (i100 >= 0) return { s: "2", t: `คาดน้ำท่วมเมือง ${when(i100)}`, d: "ระดับเท่า ก.ย.69 (ตลาดท่วม 30–60 ซม.) · ค่าคลาดได้หลายชั่วโมง" };
+  if (ir >= 0) return { s: "15", t: `ถึงเกณฑ์อันตราย ${when(ir)}`, d: `ยอด 72 ชม. ${mx.toFixed(0)}% ของ ก.ย.69 · ก.ย.69 เกณฑ์นี้เตือนก่อนน้ำล้นจุด A ~40 ชม.` };
+  const hi = VG.index_hi;
+  return { s: "0", t: "ไม่คาดว่าจะท่วมใน 72 ชม.", d: `ยอดน้ำสูงสุด ${mx.toFixed(0)}% ของ ก.ย.69` + (hi != null && hi >= r ? ` · ถ้าฝนหนักกว่าคาด อาจถึง ${hi.toFixed(0)}%` : "") };
+}
 const TUBE = {
   all: ["ภาพรวมทุกตัวชี้วัด (เฉลี่ยถ่วงน้ำหนัก)", "เทียบเกณฑ์แต่ละตัว: 50 = เฝ้าระวัง · 100 = อันตราย", i => i.mini + (i.cov < 100 ? ` · นับได้ ${i.cov}%` : "")],
   A: ["ระดับน้ำห้วยเกวียน (จุด A)", "สะพานบ้านเกาะสะเดา · เทียบตลิ่ง · อ่านด้วยตา", i => i.short],
@@ -1127,7 +1148,8 @@ const TUBE = {
 function tube(i) {
   const g = i.g, L = TUBE[i.k] || [i.name, "", null], val = esc(g && L[2] ? L[2](i) : (i.short ?? i.mini ?? ""));
   const w = IMP[i.k] != null ? `<em class="tw" title="ความสำคัญ">${IMP[i.k]}%</em>` : "";
-  const head = `<span class="tn"><i aria-hidden="true"></i><span><b>${esc(L[0])}</b>${L[1] ? `<small>${esc(L[1])}</small>` : ""}</span></span>`;
+  const eta = i.eta ? `<span class="eta" data-s="${i.eta.s}"><b>${esc(i.eta.t)}</b><small>${esc(i.eta.d)}</small></span>` : "";
+  const head = `<span class="tn"><i aria-hidden="true"></i><span><b>${esc(L[0])}</b>${L[1] ? `<small>${esc(L[1])}</small>` : ""}</span>${eta}</span>`;
   if (!g) return `<a class="mini tube" data-s="${i.s}" href="#${i.card}">${head}<span class="tr"><span class="tb"><span class="tv out" style="left:8px">${val}</span></span>${w}</span></a>`;
   const pc = v => Math.max(0, Math.min(100, (v - g.min) / (g.max - g.min) * 100));
   const f = Math.max(pc(g.v), 3), inside = f >= 38;
@@ -1157,6 +1179,7 @@ function renderHero(fails) {
   $("heroWarn").hidden = !warn.length && !fails.length;
   $("heroWarn").textContent = [warn.length ? `ข้อมูลล่าช้า/ไม่มี (ไม่นับรวม): ${warn.join(", ")}` : "", fails.length ? `ดึงไม่ได้: ${fails.join(", ")}` : ""].filter(Boolean).join(" · ");
   const all = composite();
+  if (all) all.eta = floodEta();
   $("heroList").innerHTML = (all ? tube(all).replace('class="mini tube"', 'class="mini tube all"') : "") + list.map(tube).join("") + `<div class="tube-key"><span class="ky"></span>เฝ้าระวัง <span class="kr"></span>อันตราย (วิกฤต) <em class="kw">% ท้ายหลอด = ความสำคัญ · ${IMP_R2 ? "ชุดช่วงเสี่ยงท่วมรอบสอง" : "ชุดปกติ"}</em></div>`;
   for (const tb of document.querySelectorAll("#heroList .tb")) {   // ตัวเลขยาวกว่าน้ำในหลอด → ย้ายไปต่อท้ายน้ำ / ชิดขวาถ้าล้นหลอด
     const tv = tb.querySelector(".tv"), tf = tb.querySelector(".tf"); if (!tv || !tf) continue;
