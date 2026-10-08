@@ -100,6 +100,7 @@ button:disabled{opacity:.6}
 .tube .tr{display:flex;align-items:center;gap:6px}
 .tube .tw{flex:none;width:28px;text-align:right;font-style:normal;font-size:.66rem;font-weight:700;font-variant-numeric:tabular-nums;color:var(--ink-soft)}
 .tube .tls{margin-right:34px}
+.mini.tube.all{grid-column:1/-1;box-shadow:0 0 0 2px rgba(0,0,0,.18)}
 .tube-key .kw{font-style:normal;margin-left:auto;opacity:.85}
 .tube .tb{flex:1;min-width:0;position:relative;display:block;height:22px;border-radius:11px;background:var(--track);overflow:hidden;box-shadow:inset 0 1px 2px rgba(0,0,0,.12)}
 .tube .tf{position:absolute;left:0;top:0;bottom:0;border-radius:11px;background:var(--water)}
@@ -1095,7 +1096,23 @@ function pickImp() {
   raw.sort((a, b) => (b[1] % 1) - (a[1] % 1)).forEach(([k]) => { if (left-- > 0) out[k]++; });
   IMP = out;
 }
+/* หลอดรวม: แปลงแต่ละตัวเป็นคะแนนเทียบเกณฑ์ของตัวเอง (ฐานหลอด = 0 · ขีดเหลือง = 50 · ขีดแดง = 100) แล้วเฉลี่ยถ่วงตาม IMP
+   ตัวที่ล่าช้า/ไม่มีข้อมูลตัดออกแล้วเกลี่ยน้ำหนักใหม่ · เป็นภาพรวมแรงกดดัน ไม่นับเข้าสถานะรวม (สถานะรวมยังยึดตัวที่หนักสุด) */
+function riskOf(g) {
+  const { min, v, y, r } = g, span = r != null ? r - y : y - min;
+  const x = v <= y ? 50 * (v - min) / (y - min) : 50 + 50 * (v - y) / span;
+  return Math.max(0, Math.min(150, x));
+}
+function composite() {
+  const use = Object.keys(IMP).filter(k => ITEMS[k] && ITEMS[k].g && ITEMS[k].s !== "x");
+  const wt = use.reduce((a, k) => a + IMP[k], 0); if (!wt) return null;
+  const v = use.reduce((a, k) => a + IMP[k] * riskOf(ITEMS[k].g), 0) / wt;
+  const lv = v >= 100 ? 2 : v >= 75 ? 1.5 : v >= 50 ? 1 : 0, s = ST_LV[lv];
+  return { k: "all", name: "ภาพรวม", info: true, mini: `${v.toFixed(0)} / 100`, s, lv: null, card: "heroList", cov: wt,
+    g: { min: 0, max: 130, v: Math.min(v, 130), y: 50, r: 100 } };
+}
 const TUBE = {
+  all: ["ภาพรวมทุกตัวชี้วัด (เฉลี่ยถ่วงน้ำหนัก)", "เทียบเกณฑ์แต่ละตัว: 50 = เฝ้าระวัง · 100 = อันตราย", i => i.mini + (i.cov < 100 ? ` · นับได้ ${i.cov}%` : "")],
   A: ["ระดับน้ำห้วยเกวียน (จุด A)", "สะพานบ้านเกาะสะเดา · เทียบตลิ่ง · อ่านด้วยตา", i => i.short],
   vg: ["น้ำคลองกลางเมืองพนัส (ผ่านออฟฟิศ)", "แบบจำลอง · ยอดน้ำ 72 ชม.ข้างหน้า เทียบท่วม ก.ย.69 = 100%", i => i.mini],
   kgt: ["ระดับน้ำคลองหลวง", "สถานีบ้านท่าบุญมี · ตลิ่ง 18.37 ม.รทก.", i => i.mini + " ม.รทก."],
@@ -1139,7 +1156,8 @@ function renderHero(fails) {
   const warn = late.map(i => i.name);
   $("heroWarn").hidden = !warn.length && !fails.length;
   $("heroWarn").textContent = [warn.length ? `ข้อมูลล่าช้า/ไม่มี (ไม่นับรวม): ${warn.join(", ")}` : "", fails.length ? `ดึงไม่ได้: ${fails.join(", ")}` : ""].filter(Boolean).join(" · ");
-  $("heroList").innerHTML = list.map(tube).join("") + `<div class="tube-key"><span class="ky"></span>เฝ้าระวัง <span class="kr"></span>อันตราย (วิกฤต) <em class="kw">% ท้ายหลอด = ความสำคัญ · ${IMP_R2 ? "ชุดช่วงเสี่ยงท่วมรอบสอง" : "ชุดปกติ"}</em></div>`;
+  const all = composite();
+  $("heroList").innerHTML = (all ? tube(all).replace('class="mini tube"', 'class="mini tube all"') : "") + list.map(tube).join("") + `<div class="tube-key"><span class="ky"></span>เฝ้าระวัง <span class="kr"></span>อันตราย (วิกฤต) <em class="kw">% ท้ายหลอด = ความสำคัญ · ${IMP_R2 ? "ชุดช่วงเสี่ยงท่วมรอบสอง" : "ชุดปกติ"}</em></div>`;
   for (const tb of document.querySelectorAll("#heroList .tb")) {   // ตัวเลขยาวกว่าน้ำในหลอด → ย้ายไปต่อท้ายน้ำ / ชิดขวาถ้าล้นหลอด
     const tv = tb.querySelector(".tv"), tf = tb.querySelector(".tf"); if (!tv || !tf) continue;
     if (!tv.classList.contains("out") && tv.offsetWidth + 8 > tf.offsetWidth) { tv.classList.add("out"); tv.style.left = tf.offsetWidth + "px"; }
