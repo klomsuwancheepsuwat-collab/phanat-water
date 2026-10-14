@@ -173,6 +173,19 @@ svg{display:block;width:100%;height:auto}
 .kv b{display:block;font-family:var(--f-num);font-size:1.05rem;font-weight:500}
 .kv span{font-size:.75rem;color:var(--ink-soft)}
 .badge{display:inline-block;border-radius:8px;padding:3px 10px;font-weight:700;font-size:.92rem;background:var(--surface-2)}
+.aform{margin-top:10px;border-top:1px solid var(--border);padding-top:8px}
+.aform summary{cursor:pointer;font-weight:700;color:var(--accent-deep);padding:4px 0}
+.aform .seg{display:flex;gap:8px;margin:8px 0}
+.aform .seg label{flex:1;text-align:center;border:1px solid var(--border);border-radius:999px;padding:8px;font-weight:600;cursor:pointer}
+.aform .seg label:has(input:checked){background:var(--accent);border-color:var(--accent);color:#fff}
+.aform .seg input{position:absolute;opacity:0;pointer-events:none}
+.aform .fld{display:block;font-size:.85rem;color:var(--ink-soft);margin:8px 0}
+.aform .fld input{display:block;width:100%;box-sizing:border-box;margin-top:4px;font:600 1.05rem var(--f-body);color:var(--ink);background:var(--surface-2);border:1px solid var(--border);border-radius:10px;padding:10px 12px}
+.aform .frow{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.aform #aSave{background:var(--accent);border-color:var(--accent);color:#fff;padding:10px 22px}
+.fmsg{font-size:.88rem;font-weight:600}
+.fmsg.ok{color:var(--green)} .fmsg.err{color:var(--red)}
+.pend{color:var(--orange);font-weight:700}
 .empty{margin-top:10px;padding:14px;border:1.5px dashed var(--border);border-radius:10px;text-align:center;color:var(--ink-soft);font-weight:600}
 .fc{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px;align-items:end;margin-top:8px}
 .fc div{text-align:center;font-size:.75rem;color:var(--ink-soft)}
@@ -249,7 +262,19 @@ ul{margin:6px 0 0;padding-left:1.1rem}
       <div class="hl"><span class="big" id="aBig">–</span><span class="unit" id="aUnit">ม. ต่ำกว่าตลิ่ง</span></div>
       <div id="aViz"></div>
       <p class="say" id="aSay"></p>
-      <div class="note" id="aNote">ส่งค่าใหม่: บอกอีหนูว่า "A 1.2" (= ผิวน้ำต่ำกว่าตลิ่ง 1.2 ม. · ติดลบ = ล้นตลิ่ง)</div>
+      <div class="note" id="aNote"></div>
+      <details class="aform" id="aForm">
+        <summary>＋ ใส่ค่าจุด A ที่เห็นตอนนี้</summary>
+        <div class="seg" role="radiogroup" aria-label="น้ำอยู่ตรงไหนเทียบตลิ่ง">
+          <label><input type="radio" name="aSide" value="below" checked> ต่ำกว่าตลิ่ง</label>
+          <label><input type="radio" name="aSide" value="over"> ล้นตลิ่ง</label>
+        </div>
+        <label class="fld">ห่างจากตลิ่ง (ม.)<input id="aVal" type="text" inputmode="decimal" autocomplete="off" placeholder="เช่น 1.2"></label>
+        <label class="fld">หมายเหตุ (ไม่ใส่ก็ได้)<input id="aMemo" type="text" maxlength="60" placeholder="เช่น ฝนตกหนักเมื่อคืน"></label>
+        <label class="fld" id="aTokWrap" hidden>รหัสบันทึก (ใส่ครั้งแรกครั้งเดียว เครื่องนี้จำไว้)<input id="aTok" type="password" autocomplete="off" placeholder="github_pat_…"></label>
+        <div class="frow"><button id="aSave" type="button">บันทึก</button><span id="aMsg" class="fmsg" role="status"></span></div>
+        <p class="note">แอปคำนวณสถานะให้ทันที · เครื่องออฟฟิศเก็บลงประวัติ + แบบจำลองในรอบถัดไป (≤30 นาที) · <a href="#" id="aTokReset">เปลี่ยนรหัส</a></p>
+      </details>
     </section>
 
     <!-- 3) คลองกลางเมืองพนัส (แบบจำลอง) -->
@@ -551,8 +576,51 @@ async function loadStatus() {
     return { generated: new Date(h).toISOString(), vg: { index_now: now, index_max: peak, index_hi: peak + 9, peak_h: at, level: DEMO === "red" ? 3 : DEMO === "yellow" ? 1 : 0, series, thresholds: { y: 35, o: 55, r: 75 } },
       point_A: { latest: { t: tstr(aT), below_ref_m: aBelow }, history: [] } };
   }
-  return j("status.json?t=" + Date.now());
+  return withPendingA(await j("status.json?t=" + Date.now()));
 }
+
+/* ── ใส่ค่าจุด A จากมือถือ ──
+   บันทึก = เขียนไฟล์ inbox/A-*.json ลง repo นี้ผ่าน GitHub API (รหัส fine-grained เฉพาะ repo นี้ · เก็บใน localStorage เครื่องนั้นเท่านั้น)
+   → แอปเอาค่าไปคำนวณสถานะทันที (ค่ารอ) → เครื่องออฟฟิศ (flood_watch.py รอบ 30 นาที) ดึงเข้า obs_point_A.csv แล้วลบไฟล์ inbox
+   ค่ารอถูกทิ้งเองเมื่อ status.json มีค่าที่ใหม่เท่ากันหรือกว่าแล้ว */
+const GH_REPO = "klomsuwancheepsuwat-collab/phanat-water", TOK_KEY = "pw_tok", PEND_KEY = "pw_pendA";
+const getPend = () => { try { return JSON.parse(localStorage.getItem(PEND_KEY)) || []; } catch { return []; } };
+function withPendingA(st) {
+  const pa = st.point_A || (st.point_A = { latest: null, history: [] }), last = pa.latest ? pa.latest.t : "";
+  const pend = getPend().filter(p => p.t > last);
+  localStorage.setItem(PEND_KEY, JSON.stringify(pend));
+  if (pend.length) pa.latest = Object.assign({}, pend[pend.length - 1], { pending: true });
+  return st;
+}
+function aMsg(t, cls) { const m = $("aMsg"); m.textContent = t; m.className = "fmsg " + (cls || ""); }
+function aTokUi() { $("aTokWrap").hidden = !!localStorage.getItem(TOK_KEY); }
+async function saveA() {
+  const raw = $("aVal").value.trim().replace(",", "."), v = Number(raw);
+  if (!raw || !isFinite(v) || v < 0 || v > 5) return aMsg("ใส่ตัวเลข 0–5 ม. (เลือกต่ำกว่า/ล้นตลิ่งด้านบน)", "err");
+  const over = document.querySelector('input[name="aSide"]:checked').value === "over";
+  if (over && v > 2) return aMsg("ล้นตลิ่งเกิน 2 ม.? เช็กตัวเลขอีกที", "err");
+  let tok = localStorage.getItem(TOK_KEY) || $("aTok").value.trim();
+  if (!tok) { $("aTokWrap").hidden = false; return aMsg("ใส่รหัสบันทึกก่อน (ครั้งแรกครั้งเดียว)", "err"); }
+  const now = Date.now(), rec = { t: tstr(now), below_ref_m: over ? -v : v, note: $("aMemo").value.trim().slice(0, 60) };
+  const d = new Date(now), name = `inbox/A-${ymd(d).replace(/-/g, "")}-${pad(d.getHours())}${pad(d.getMinutes())}${pad(d.getSeconds())}.json`;
+  const body = JSON.stringify({ message: `จุด A ${rec.below_ref_m} (มือถือ)`, content: btoa(unescape(encodeURIComponent(JSON.stringify(rec)))) });
+  $("aSave").disabled = true; aMsg("กำลังส่ง…");
+  try {
+    const r = await fetch(`https://api.github.com/repos/${GH_REPO}/contents/${name}`, { method: "PUT", body,
+      headers: { Authorization: "Bearer " + tok, Accept: "application/vnd.github+json" } });
+    if (r.status === 401 || r.status === 403 || r.status === 404) { localStorage.removeItem(TOK_KEY); aTokUi(); throw new Error("รหัสบันทึกใช้ไม่ได้/หมดอายุ — ใส่รหัสใหม่"); }
+    if (!r.ok) throw new Error("ส่งไม่สำเร็จ (" + r.status + ") ลองอีกครั้ง");
+    localStorage.setItem(TOK_KEY, tok); $("aTok").value = ""; aTokUi();
+    localStorage.setItem(PEND_KEY, JSON.stringify(getPend().concat(rec)));
+    $("aVal").value = ""; $("aMemo").value = "";
+    aMsg(`บันทึกแล้ว ${over ? "ล้นตลิ่ง" : "ต่ำกว่าตลิ่ง"} ${v.toFixed(2)} ม. · ${rec.t.slice(11)} น.`, "ok");
+    busy = false; load();
+  } catch (e) { aMsg(e.message === "Failed to fetch" ? "ส่งไม่ได้ — เช็กเน็ตแล้วลองใหม่" : e.message, "err"); }
+  finally { $("aSave").disabled = false; }
+}
+$("aSave").addEventListener("click", saveA);
+$("aTokReset").addEventListener("click", ev => { ev.preventDefault(); localStorage.removeItem(TOK_KEY); aTokUi(); aMsg("ใส่รหัสใหม่แล้วกดบันทึก"); });
+aTokUi();
 function noData(viz, say, msg) { $(viz).innerHTML = `<div class="empty">${esc(msg)}</div>`; $(say).textContent = ""; }
 
 function renderA(st) {
@@ -574,9 +642,8 @@ function renderA(st) {
   const gap = below - 0.10;
   $("aSay").innerHTML = below <= 0 ? `น้ำล้นตลิ่งแล้ว <b>${(-below * 100).toFixed(0)} ซม.</b>` + (e >= 0.30 ? " · ถึงระดับสูงสุด ก.ย.69 แล้ว" : ` · ต่ำกว่าระดับสูงสุด ก.ย.69 อีก ${((0.30 - e) * 100).toFixed(0)} ซม.`)
     : gap > 0 ? `ต่ำกว่าระดับก่อนล้น (25 ก.ย.) อีก <b>${gap.toFixed(2)} ม.</b>` : `ถึงระดับวันก่อนล้น (25 ก.ย.) แล้ว · อีก <b>${(below * 100).toFixed(0)} ซม.</b> ถึงตลิ่ง`;
-  let note = `อ่านเมื่อ ${clock(t)}` + (a.note ? ` · ${a.note}` : "");
-  if (late) note = `<div class="late-box">ค่าเก่า ${agoTxt(t)} — ส่งค่าใหม่ได้ (บอกอีหนู "A 1.2")</div>`;
-  else note += ` · ส่งค่าใหม่: บอกอีหนู "A 1.2" (ติดลบ = ล้นตลิ่ง)`;
+  let note = `อ่านเมื่อ ${clock(t)}` + (a.note ? ` · ${esc(a.note)}` : "") + (a.pending ? ` · <span class="pend">ส่งจากมือถือ รอเครื่องออฟฟิศเก็บ</span>` : "");
+  if (late) note = `<div class="late-box">ค่าเก่า ${agoTxt(t)} — ใส่ค่าใหม่ได้ที่ "＋ ใส่ค่าจุด A" ด้านล่าง</div>`;
   $("aNote").innerHTML = note;
   const s = late ? "x" : ST_LV[lv];
   setCard("cA", s); chip("aChip", late ? "x" : lv, late ? "ค่าเก่า" : ["ปลอดภัย", "เฝ้าระวัง", "อันตราย"][lv]);
