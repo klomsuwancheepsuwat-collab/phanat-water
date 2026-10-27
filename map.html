@@ -398,15 +398,26 @@ async function loadBpk() {
   const e = await wl(BPK), t = parseT(e.datetime);
   set("bpk", { lv: "i", val: `${(+e.value).toFixed(2)} ม.`, short: "บางปะกง", detail: `ระดับ ${(+e.value).toFixed(2)} ม.รทก. · ตลิ่ง 1.67 · ขึ้นลงตามน้ำทะเล ไม่นับในสถานะ · ${when(t)}` });
 }
+/* อ่างคลองหลวง: ใช้กรมชลฯ rsv491 แทน thaiwater (27 ต.ค. 69 thaiwater ลงระบาย 113.09 ทั้งที่ RID 2.31) · RID ล่ม = คืน null ใช้ thaiwater */
+async function klRid() {
+  try {
+    const t = new Date(), a = ymd(new Date(Date.now() - 5 * 864e5)), b = ymd(t);
+    const d = await j(`https://app.rid.go.th/reservoir/api/rsvmiddle?rsvmiddle=rsv491&date_start=${a}&date_end=${b}&percent=`);
+    const x = (d.reservoir_data || []).filter(r => r.qdisc_curr).sort((p, q) => p.date < q.date ? 1 : -1)[0];
+    return x ? { dam: { id: DAM_KL, normal_storage: 98 }, dam_date: x.date, dam_storage: (+x.qdisc_curr).toFixed(2), dam_storage_percent: +x.percent_resv_curr,
+      dam_inflow: (+x.q_info).toFixed(2), dam_released: (+x.q_outfo).toFixed(2), src: "rid" } : null;
+  } catch (e) { return null; }
+}
 async function loadDams() {
-  const d = await j(`${API}/analyst/dam`), m0 = d.data.dam_medium, m = m0.data || m0;
+  const [d, rk] = await Promise.all([j(`${API}/analyst/dam`), klRid()]), m0 = d.data.dam_medium, m1 = m0.data || m0;
+  const m = rk ? m1.filter(x => x.dam.id !== DAM_KL).concat([rk]) : m1;
   const pick = id => m.filter(x => x.dam.id === id && x.dam_storage != null).sort((a, b) => a.dam_date < b.dam_date ? 1 : -1)[0];
   const kl = pick(DAM_KL), bb = pick(DAM_BB);
   const dd = t => `${new Date(t).getDate()}/${new Date(t).getMonth() + 1}`;
   if (kl) {
     const rel = kl.dam_released != null ? +kl.dam_released : null, t = parseT(kl.dam_date + " 00:00"), late = Date.now() - t > 3 * 864e5;
-    set("kl", { lv: late ? "x" : lvl(rel, null, 2.0), val: rel != null ? `ระบาย ${rel.toFixed(2)}` : "–", short: "อ่างคลองหลวง",
-      detail: `ระบาย ${rel ?? "–"} ล้าน ลบ.ม./วัน (อันตราย ≥2.0) · น้ำเข้า ${kl.dam_inflow ?? "–"} · ความจุ ${(+kl.dam_storage_percent).toFixed(0)}% · ข้อมูลวันที่ ${dd(t)}` });
+    set("kl", { lv: late ? "x" : rel == null ? 0 : rel >= 4.5 ? 2 : rel >= 2.0 ? 1.5 : rel >= 1.5 ? 1 : 0, val: rel != null ? `ระบาย ${rel.toFixed(2)}` : "–", short: "อ่างคลองหลวง",
+      detail: `ระบาย ${rel ?? "–"} ล้าน ลบ.ม./วัน (เฝ้าระวัง ≥1.5 · ใกล้อันตราย ≥2.0 · อันตราย ≥4.5) · น้ำเข้า ${kl.dam_inflow ?? "–"} · ความจุ ${(+kl.dam_storage_percent).toFixed(0)}% · ข้อมูลวันที่ ${dd(t)}` });
   }
   if (bb) {
     const p = +bb.dam_storage_percent, st = +bb.dam_storage, room = st / p * 100 - st, net = (+bb.dam_inflow || 0) - (+bb.dam_released || 0), days = room > 0 && net > 0 ? room / net : null, t = parseT(bb.dam_date + " 00:00"), late = Date.now() - t > 3 * 864e5;

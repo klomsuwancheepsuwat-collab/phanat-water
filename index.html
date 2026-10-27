@@ -750,7 +750,18 @@ async function fetchDams() {
     return [{ dam: { id: DAM_BB, normal_storage: 12.4 }, dam_date: dd, dam_storage: (12.4 * bbp / 100).toFixed(2), dam_storage_percent: bbp, dam_inflow: 0.31, dam_released: 0.12 },
       { dam: { id: DAM_KL, normal_storage: 98 }, dam_date: dd, dam_storage: 130, dam_storage_percent: DEMO === "red" ? 141 : 132.7, dam_inflow: 1.4, dam_released: rel }];
   }
-  const d = await j(`${API}/analyst/dam`); let m = d.data.dam_medium; return m.data || m;
+  const [d, rk] = await Promise.all([j(`${API}/analyst/dam`), klRid()]); let m = d.data.dam_medium; m = m.data || m;
+  return rk ? m.filter(x => x.dam.id !== DAM_KL).concat([rk]) : m;
+}
+/* อ่างคลองหลวง: ใช้กรมชลฯ rsv491 แทน thaiwater (27 ต.ค. 69 thaiwater ลงระบาย 113.09 ทั้งที่ RID 2.31) · RID ล่ม = คืน null ใช้ thaiwater */
+async function klRid() {
+  try {
+    const t = new Date(), a = ymd(new Date(Date.now() - 5 * 864e5)), b = ymd(t);
+    const d = await j(`https://app.rid.go.th/reservoir/api/rsvmiddle?rsvmiddle=rsv491&date_start=${a}&date_end=${b}&percent=`);
+    const x = (d.reservoir_data || []).filter(r => r.qdisc_curr).sort((p, q) => p.date < q.date ? 1 : -1)[0];
+    return x ? { dam: { id: DAM_KL, normal_storage: 98 }, dam_date: x.date, dam_storage: (+x.qdisc_curr).toFixed(2), dam_storage_percent: +x.percent_resv_curr,
+      dam_inflow: (+x.q_info).toFixed(2), dam_released: (+x.q_outfo).toFixed(2), src: "rid" } : null;
+  } catch (e) { return null; }
 }
 async function loadDams() {
   const m = await fetchDams();
